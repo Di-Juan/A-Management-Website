@@ -1,17 +1,9 @@
-import fs from 'node:fs';
-import os from 'node:os';
-import path from 'node:path';
 import { randomUUID } from 'node:crypto';
 import request from 'supertest';
 import ExcelJS from 'exceljs';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { createApp } from '../server/src/app.js';
 
-// 必须在导入应用前指向临时数据目录，避免污染 server/data
-const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), 'classfund-test-'));
-process.env.DATA_DIR = dataDir;
-process.env.JWT_SECRET = 'test-jwt-secret';
-
-const { createApp } = await import('../server/src/app.js');
 const app = createApp();
 const api = request(app);
 

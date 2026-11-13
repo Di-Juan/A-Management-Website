@@ -277,7 +277,7 @@ curl -H "Authorization: ApiKey cfk_xxxxxxxx" http://localhost:8787/api/v1/equipm
 | [react](https://react.dev/) / [react-dom](https://react.dev/) | 18.x | 前端框架 | MIT |
 | [react-router-dom](https://reactrouter.com/) | 6.x | 前端路由 | MIT |
 | [vite](https://vite.dev/) | 6.x | 构建工具 | MIT |
-| [vitest](https://vitest.dev/) / [supertest](https://github.com/ladjs/supertest) | 5.x / 7.x | 测试 | MIT |
+| [vitest](https://vitest.dev/) / [supertest](https://github.com/ladjs/supertest) | 3.x / 7.x | 测试 | MIT |
 | [eslint](https://eslint.org/) / [prettier](https://prettier.io/) | 10.x / 3.x | 代码检查与格式化 | MIT |
 
 运行环境与其他镜像：

@@ -281,8 +281,8 @@
 <p>测试分三层：<strong>接口自动化测试</strong>覆盖鉴权、权限与业务规则；<strong>场景化验证</strong>针对并发、越权、限流等难以用单条断言描述的路径，用脚本与多账号实测；<strong>部署验证</strong>在真实服务器上用容器化方式启动并逐项检查。</p>
 <table>
   <tr><th style="width:22%">项目</th><th>内容</th></tr>
-  <tr><td>测试框架</td><td>Vitest 5 + Supertest 7，直接对 Express 实例发起 HTTP 请求</td></tr>
-  <tr><td>运行方式</td><td><code>npm test</code>；每条用例使用独立的临时数据目录，互不干扰</td></tr>
+  <tr><td>测试框架</td><td>Vitest 3 + Supertest 7，直接对 Express 实例发起 HTTP 请求</td></tr>
+  <tr><td>运行方式</td><td><code>npm test</code>；<code>tests/setup.js</code> 在加载应用前把数据目录指向系统临时目录，不影响 <code>server/data</code></td></tr>
   <tr><td>用例规模</td><td>38 个自动化用例 + 6 个场景化验证项 + 部署验证清单</td></tr>
   <tr><td>验证环境</td><td>Linux（Ubuntu）+ Docker 24 / Compose v2，Node.js 24 容器内运行，SQLite WAL</td></tr>
   <tr><td>判定标准</td><td>用例全部通过；异常路径返回预期状态码（401/403/409/429）；审计表有对应记录</td></tr>
@@ -356,7 +356,7 @@
   <tr><td>archiver 7</td><td>MIT</td><td>多文件 ZIP 打包导出</td><td><code>github.com/archiverjs/node-archiver</code></td></tr>
   <tr><td>React 18 / React Router 6</td><td>MIT</td><td>前端组件与路由</td><td><code>react.dev</code>、<code>reactrouter.com</code></td></tr>
   <tr><td>Vite 6</td><td>MIT</td><td>前端开发与构建</td><td><code>vite.dev</code></td></tr>
-  <tr><td>Vitest 5 / Supertest 7</td><td>MIT</td><td>接口测试与断言</td><td><code>vitest.dev</code>、<code>github.com/ladjs/supertest</code></td></tr>
+  <tr><td>Vitest 3 / Supertest 7</td><td>MIT</td><td>接口测试与断言</td><td><code>vitest.dev</code>、<code>github.com/ladjs/supertest</code></td></tr>
   <tr><td>ESLint 10 / Prettier 3</td><td>MIT</td><td>代码检查与格式化，仅开发期使用</td><td><code>eslint.org</code>、<code>prettier.io</code></td></tr>
   <tr><td>Node.js 24</td><td>MIT</td><td>运行时；内置 <code>node:sqlite</code> 提供数据库能力，未引入原生扩展</td><td><code>nodejs.org</code></td></tr>
   <tr><td>Nginx 1.27（Alpine 镜像）</td><td>BSD-2-Clause</td><td>反向代理与静态资源托管</td><td><code>nginx.org</code></td></tr>
