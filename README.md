@@ -25,6 +25,15 @@
 
 ## 架构
 
+```mermaid
+flowchart LR
+  A["浏览器 / 微信小程序<br/>React SPA · Taro"] --> B["Nginx 入口<br/>HTTPS · 静态资源 · 反代"]
+  B --> C["app · Node.js :8787<br/>REST API · JWT / API Key"]
+  C --> D[("SQLite + 文件<br/>./data 持久化")]
+  W["worker · 定时任务<br/>逾期收敛 · 备份检查"] <--> D
+  C -->|"/status 探测"| W
+```
+
 ```text
 浏览器 ──HTTPS :443──> 宿主机 Nginx ──> 容器 Nginx :8080 ──> app(Node) :8787 ──> SQLite(./data)
                               │
@@ -157,7 +166,7 @@ curl -H "Authorization: ApiKey cfk_xxxxxxxx" http://localhost:8787/api/v1/equipm
 - 数据库：`DATA_DIR/classfund.db`（SQLite，WAL 模式）。
 - 上传文件：`DATA_DIR/uploads`。
 - 备份：`DATA_DIR/backups`，每天自动生成，保留最近 14 天；管理员可在「设置 → 运行状态/数据备份」查看、立即备份或下载。
-- Docker 部署时以上目录统一位于 `kx-data` 数据卷。
+- Docker 部署时以上目录位于项目根目录 `./data`（挂载为容器内 `/data`），备份直接打包该目录。
 
 ## 第三方组件与许可证
 
