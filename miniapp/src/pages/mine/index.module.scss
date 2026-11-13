@@ -1,0 +1,206 @@
+@use '@/styles/variables.scss' as *;
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: 36rpx $spacing-lg;
+  border-radius: 28rpx;
+  background: linear-gradient(135deg, #0f766e 0%, #0b5a54 60%, #083f3a 100%);
+  box-shadow: 0 20rpx 40rpx -20rpx rgba(8, 63, 58, 0.6);
+}
+
+.avatar {
+  width: 120rpx;
+  height: 120rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  border: 2rpx solid rgba(255, 255, 255, 0.24);
+  @include flex-center;
+  flex: none;
+}
+
+.avatarText {
+  font-size: 52rpx;
+  font-weight: $font-weight-bold;
+  color: #e9f8f3;
+}
+
+.profileInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.name {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: #e9f8f3;
+  @include text-ellipsis;
+}
+
+.roleTag {
+  flex: none;
+  padding: 2rpx 14rpx;
+  border-radius: $radius-round;
+  background: rgba(255, 255, 255, 0.14);
+  color: #d9f6ee;
+  font-size: 20rpx;
+}
+
+.roleAdmin {
+  background: rgba(255, 255, 255, 0.22);
+  color: #ffffff;
+}
+
+.account {
+  display: block;
+  margin-top: 6rpx;
+  font-size: $font-size-xs;
+  color: rgba(233, 248, 243, 0.68);
+}
+
+.section {
+  margin-top: $spacing-md;
+  padding: $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+}
+
+.sectionTitle {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.permWrap {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.permTag {
+  padding: 6rpx 20rpx;
+  border-radius: $radius-round;
+  background: $color-primary-soft;
+  color: $color-primary-dark;
+  font-size: $font-size-xs;
+}
+
+.permEmpty {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: 18rpx 0;
+
+  & + & {
+    border-top: 2rpx solid $color-divider;
+  }
+
+  &:active {
+    opacity: 0.7;
+  }
+}
+
+.menuIcon {
+  width: 72rpx;
+  height: 72rpx;
+  border-radius: $radius-md;
+  background: $color-bg-hover;
+  @include flex-center;
+  flex: none;
+}
+
+.menuIconText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-primary-dark;
+}
+
+.menuInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.menuLabel {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.menuDesc {
+  display: block;
+  margin-top: 2rpx;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.menuArrow {
+  font-size: 40rpx;
+  color: $color-text-disabled;
+}
+
+.wxStatus {
+  flex: none;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.wxStatusOn {
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.adminTip {
+  margin-top: $spacing-md;
+  padding: 20rpx 24rpx;
+  border-radius: $radius-md;
+  background: $color-primary-soft;
+}
+
+.adminTipText {
+  font-size: $font-size-xs;
+  color: $color-primary-dark;
+  line-height: $line-height-normal;
+}
+
+.logout {
+  margin-top: $spacing-xl;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  border: 2rpx solid $color-border;
+  background: $color-bg-card;
+  @include flex-center;
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.logoutText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-error;
+}
+
+.version {
+  display: block;
+  margin-top: $spacing-lg;
+  text-align: center;
+  font-size: 20rpx;
+  color: $color-text-disabled;
+}

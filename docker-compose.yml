@@ -1,0 +1,86 @@
+services:
+  app:
+    build: .
+    image: kx-ops:latest
+    container_name: kx-ops-app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+      - TZ=Asia/Shanghai
+      - DATA_DIR=/data
+      - HOST=0.0.0.0
+      - WORKER_ENABLED=1
+      - WORKER_URL=http://worker:8788
+      - JWT_SECRET=${JWT_SECRET:-}
+      - CORS_ORIGINS=${CORS_ORIGINS:-}
+      - COOKIE_SECURE=${COOKIE_SECURE:-0}
+      - WX_APPID=${WX_APPID:-}
+      - WX_SECRET=${WX_SECRET:-}
+    volumes:
+      - ./data:/data
+    expose:
+      - "8787"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8787/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  worker:
+    image: kx-ops:latest
+    container_name: kx-ops-worker
+    restart: unless-stopped
+    command: ["node", "server/src/worker.js"]
+    depends_on:
+      app:
+        condition: service_healthy
+    environment:
+      - NODE_ENV=production
+      - TZ=Asia/Shanghai
+      - DATA_DIR=/data
+      - WORKER_PORT=8788
+      - WORKER_INTERVAL_MS=60000
+    volumes:
+      - ./data:/data
+    expose:
+      - "8788"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8788/health"]
+      interval: 60s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: kx-ops-nginx
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./deploy/nginx-class-fund.conf:/etc/nginx/conf.d/default.conf:ro
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

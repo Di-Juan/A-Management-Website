@@ -1,0 +1,82 @@
+@use '@/styles/variables.scss' as *;
+
+.state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $spacing-sm;
+  padding: 96rpx $spacing-lg;
+}
+
+.spinner {
+  width: 44rpx;
+  height: 44rpx;
+  border: 4rpx solid $color-border;
+  border-top-color: $color-primary;
+  border-radius: $radius-round;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.title {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.text {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  text-align: center;
+  line-height: $line-height-normal;
+}
+
+.retry {
+  margin-top: $spacing-sm;
+  padding: 0 40rpx;
+  height: $button-height-sm;
+  border: 2rpx solid $color-primary;
+  border-radius: $radius-button;
+  @include flex-center;
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.retryText {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.emptyIcon {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-lg;
+  background: $color-bg-hover;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+}
+
+.emptyLine {
+  width: 44rpx;
+  height: 8rpx;
+  border-radius: $radius-round;
+  background: $color-text-disabled;
+}
+
+.emptyLineShort {
+  width: 28rpx;
+  height: 8rpx;
+  border-radius: $radius-round;
+  background: $color-border;
+}

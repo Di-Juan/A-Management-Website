@@ -1,0 +1,11 @@
+node_modules/
+web/dist/
+server/data/
+server/data-test/
+coverage/
+.env
+*.log
+*.tar.gz
+.DS_Store
+.pai/
+miniapp/.pai/

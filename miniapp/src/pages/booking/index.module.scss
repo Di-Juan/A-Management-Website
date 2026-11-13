@@ -1,0 +1,151 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding: $spacing-md $page-padding 60rpx;
+}
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+.cardTitle {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.hint {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.pickerRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 88rpx;
+  padding: 0 24rpx;
+  background: $color-bg-page;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+}
+
+.pickerValue {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.pickerArrow {
+  font-size: 36rpx;
+  color: $color-text-tertiary;
+}
+
+.deviceMeta {
+  display: block;
+  margin-top: 12rpx;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.timeRow {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.timeCol {
+  flex: 1;
+  min-width: 0;
+}
+
+.fieldLabel {
+  display: block;
+  margin-bottom: 10rpx;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.selectors {
+  display: flex;
+  flex-direction: column;
+  gap: 10rpx;
+}
+
+.selector {
+  height: 72rpx;
+  padding: 0 20rpx;
+  background: $color-bg-page;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-sm;
+  @include flex-center;
+  justify-content: flex-start;
+}
+
+.selectorText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.textarea {
+  width: 100%;
+  height: 180rpx;
+  padding: 20rpx;
+  background: $color-bg-page;
+  border: 2rpx solid $color-border;
+  border-radius: $radius-md;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.placeholder {
+  color: $color-text-disabled;
+}
+
+.counter {
+  display: block;
+  margin-top: 10rpx;
+  text-align: right;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.tip {
+  padding: 20rpx 24rpx;
+  border-radius: $radius-md;
+  background: $color-primary-soft;
+}
+
+.tipText {
+  font-size: $font-size-xs;
+  color: $color-primary-dark;
+  line-height: $line-height-normal;
+}
+
+.submit {
+  margin-top: $spacing-lg;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  background: linear-gradient(135deg, $color-primary, $color-primary-dark);
+  box-shadow: 0 12rpx 24rpx rgba(15, 118, 110, 0.24);
+  @include flex-center;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.submitDisabled {
+  opacity: 0.6;
+}
+
+.submitText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}

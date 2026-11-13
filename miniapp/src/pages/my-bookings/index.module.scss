@@ -1,0 +1,129 @@
+@use '@/styles/variables.scss' as *;
+
+.filters {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.filter {
+  padding: 0 28rpx;
+  height: 60rpx;
+  border-radius: $radius-round;
+  background: $color-bg-card;
+  border: 2rpx solid $color-border;
+  @include flex-center;
+}
+
+.filterActive {
+  background: $color-primary;
+  border-color: $color-primary;
+}
+
+.filterText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.filterActive .filterText {
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+}
+
+.name {
+  flex: 1;
+  min-width: 0;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.code {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.timeBox {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+  padding: 16rpx 20rpx;
+  border-radius: $radius-md;
+  background: $color-bg-page;
+}
+
+.timeText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeArrow {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.purpose {
+  display: block;
+  margin-top: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: $line-height-normal;
+}
+
+.reject {
+  display: block;
+  margin-top: $spacing-xs;
+  font-size: $font-size-xs;
+  color: $color-error;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 2rpx solid $color-divider;
+}
+
+.created {
+  flex: 1;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.cancel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.complete {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}

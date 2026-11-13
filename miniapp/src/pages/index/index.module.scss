@@ -1,0 +1,325 @@
+@use '@/styles/variables.scss' as *;
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: 36rpx;
+  border-radius: 28rpx;
+  background: linear-gradient(135deg, #0f766e 0%, #0b5a54 60%, #083f3a 100%);
+  box-shadow: 0 20rpx 40rpx -20rpx rgba(8, 63, 58, 0.6);
+
+  &::after {
+    content: '';
+    position: absolute;
+    right: -60rpx;
+    top: -80rpx;
+    width: 260rpx;
+    height: 260rpx;
+    border-radius: 50%;
+    border: 2rpx solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 0 0 30rpx rgba(255, 255, 255, 0.05);
+  }
+}
+
+.heroTop {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.greeting {
+  display: block;
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: #e9f8f3;
+}
+
+.date {
+  display: block;
+  margin-top: 8rpx;
+  font-size: $font-size-sm;
+  color: rgba(233, 248, 243, 0.68);
+}
+
+.avatar {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.16);
+  border: 2rpx solid rgba(255, 255, 255, 0.24);
+  @include flex-center;
+}
+
+.avatarText {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: #e9f8f3;
+}
+
+.heroFoot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-top: 28rpx;
+}
+
+.heroRole {
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: $font-size-xs;
+  color: #d9f6ee;
+}
+
+.heroTip {
+  font-size: $font-size-xs;
+  color: rgba(233, 248, 243, 0.6);
+}
+
+.alert {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+  padding: 20rpx 24rpx;
+  border-radius: $radius-md;
+  background: #fffbeb;
+  border: 2rpx solid #fde68a;
+}
+
+.alertDanger {
+  background: $color-error-soft;
+  border-color: #f6d5d5;
+}
+
+.alertText {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: #92400e;
+}
+
+.alertDanger .alertText {
+  color: $color-error;
+}
+
+.alertAction {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-warning;
+}
+
+.alertDanger .alertAction {
+  color: $color-error;
+}
+
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+  margin-top: $spacing-md;
+}
+
+.statCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+}
+
+.statValue {
+  display: block;
+  font-size: 52rpx;
+  font-weight: $font-weight-bold;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+
+.warn {
+  color: $color-warning;
+}
+
+.info {
+  color: $color-primary;
+}
+
+.success {
+  color: $color-success;
+}
+
+.danger {
+  color: $color-error;
+}
+
+.statMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 8rpx;
+  margin-top: 8rpx;
+}
+
+.statLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.statHint {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.quickGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: $spacing-md;
+}
+
+.quickItem {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.quickIcon {
+  width: 76rpx;
+  height: 76rpx;
+  border-radius: $radius-md;
+  @include flex-center;
+}
+
+.quickIconText {
+  font-size: 32rpx;
+  font-weight: $font-weight-semibold;
+}
+
+.quickLabel {
+  margin-top: $spacing-sm;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.quickDesc {
+  margin-top: 4rpx;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.emptyRow {
+  padding: 24rpx 0;
+  @include flex-center;
+}
+
+.emptyText {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.dutyItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: 18rpx 0;
+
+  & + & {
+    border-top: 2rpx solid $color-divider;
+  }
+}
+
+.dutyTime {
+  min-width: 140rpx;
+  padding: 12rpx 16rpx;
+  border-radius: $radius-md;
+  background: $color-bg-hover;
+  @include flex-center;
+  flex-direction: column;
+}
+
+.dutyMine {
+  background: $color-primary-soft;
+}
+
+.dutyTimeText {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.dutyMine .dutyTimeText {
+  color: $color-primary-dark;
+}
+
+.dutyTimeSub {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+}
+
+.dutyInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.dutyTitle {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.dutyPeople {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+}
+
+.stockItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: 16rpx 0;
+
+  & + & {
+    border-top: 2rpx solid $color-divider;
+  }
+}
+
+.stockDot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  background: $color-warning;
+  flex: none;
+}
+
+.stockName {
+  flex: 1;
+  min-width: 0;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.stockValue {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-warning;
+}
+
+.stockWarn {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}

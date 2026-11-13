@@ -1,0 +1,128 @@
+@use '@/styles/variables.scss' as *;
+
+.filters {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.filter {
+  padding: 0 28rpx;
+  height: 60rpx;
+  border-radius: $radius-round;
+  background: $color-bg-card;
+  border: 2rpx solid $color-border;
+  @include flex-center;
+}
+
+.filterActive {
+  background: $color-primary;
+  border-color: $color-primary;
+}
+
+.filterText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.filterActive .filterText {
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $spacing-sm;
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.desc {
+  display: block;
+  margin: $spacing-sm 0;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  line-height: $line-height-normal;
+  @include text-ellipsis-multi(2);
+}
+
+.metaRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: 8rpx;
+}
+
+.metaLabel {
+  width: 56rpx;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.metaValue {
+  flex: 1;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 2rpx solid $color-divider;
+}
+
+.creator {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.cancel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.signupBtn {
+  padding: 0 32rpx;
+  height: $button-height-sm;
+  border-radius: $radius-button;
+  background: $color-primary;
+  @include flex-center;
+}
+
+.signupDisabled {
+  background: $color-bg-hover;
+}
+
+.signupText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.signupDisabled .signupText {
+  color: $color-text-tertiary;
+}

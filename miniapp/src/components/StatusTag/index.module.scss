@@ -1,0 +1,36 @@
+@use '@/styles/variables.scss' as *;
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  line-height: 1.6;
+}
+
+.success {
+  color: $color-primary-dark;
+  background: $color-primary-soft;
+}
+
+.warning {
+  color: $color-warning;
+  background: $color-warning-soft;
+}
+
+.danger {
+  color: $color-error;
+  background: $color-error-soft;
+}
+
+.muted {
+  color: $color-text-tertiary;
+  background: $color-bg-hover;
+}
+
+.info {
+  color: $color-primary;
+  background: $color-primary-soft;
+}

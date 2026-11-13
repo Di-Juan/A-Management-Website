@@ -1,0 +1,191 @@
+@use '@/styles/variables.scss' as *;
+
+.head {
+  margin-bottom: $spacing-lg;
+}
+
+.title {
+  display: block;
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.subtitle {
+  display: block;
+  margin-top: 6rpx;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.tabs {
+  display: flex;
+  gap: $spacing-sm;
+  padding: 8rpx;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+}
+
+.tab {
+  flex: 1;
+  height: 72rpx;
+  border-radius: $radius-sm;
+  @include flex-center;
+  gap: 10rpx;
+}
+
+.tabActive {
+  background: $color-primary;
+}
+
+.tabText {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.tabActive .tabText {
+  color: $color-text-white;
+  font-weight: $font-weight-semibold;
+}
+
+.tabCount {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.tabActive .tabCount {
+  color: rgba(255, 255, 255, 0.76);
+}
+
+.search {
+  margin-top: $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  border: 2rpx solid $color-border;
+  padding: 0 24rpx;
+}
+
+.searchInput {
+  height: 80rpx;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.placeholder {
+  color: $color-text-disabled;
+}
+
+.switchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: $spacing-md 0;
+  padding: 0 8rpx;
+}
+
+.switchLabel {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+}
+
+.cardTop {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-md;
+  background: $color-primary-soft;
+  @include flex-center;
+  flex: none;
+}
+
+.iconText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-primary-dark;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.name {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.lowTag {
+  flex: none;
+  padding: 2rpx 12rpx;
+  border-radius: $radius-round;
+  background: $color-warning-soft;
+  color: $color-warning;
+  font-size: 20rpx;
+}
+
+.meta {
+  display: block;
+  margin-top: 6rpx;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+}
+
+.foot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 2rpx solid $color-divider;
+}
+
+.warn {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.quantity {
+  font-size: 40rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+  font-variant-numeric: tabular-nums;
+}
+
+.quantityLow {
+  color: $color-warning;
+}
+
+.unit {
+  margin-left: 6rpx;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-normal;
+  color: $color-text-tertiary;
+}

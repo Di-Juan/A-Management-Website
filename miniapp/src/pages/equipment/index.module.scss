@@ -1,0 +1,183 @@
+@use '@/styles/variables.scss' as *;
+
+.head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: $spacing-lg;
+}
+
+.title {
+  display: block;
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.subtitle {
+  display: block;
+  margin-top: 6rpx;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.link {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-primary;
+}
+
+.search {
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  border: 2rpx solid $color-border;
+  padding: 0 24rpx;
+}
+
+.searchInput {
+  height: 80rpx;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.placeholder {
+  color: $color-text-disabled;
+}
+
+.chips {
+  margin: $spacing-md 0;
+  white-space: nowrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 28rpx;
+  height: 60rpx;
+  margin-right: $spacing-sm;
+  border-radius: $radius-round;
+  background: $color-bg-card;
+  border: 2rpx solid $color-border;
+}
+
+.chipActive {
+  background: $color-primary;
+  border-color: $color-primary;
+}
+
+.chipText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.chipActive .chipText {
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+}
+
+.cardTop {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.deviceIcon {
+  width: 88rpx;
+  height: 88rpx;
+  border-radius: $radius-md;
+  background: $color-primary-soft;
+  @include flex-center;
+  flex: none;
+}
+
+.deviceIconText {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-primary-dark;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.name {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+  max-width: 360rpx;
+}
+
+.meta {
+  display: block;
+  margin-top: 6rpx;
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+}
+
+.note {
+  display: block;
+  margin-top: 6rpx;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.cardFoot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 2rpx solid $color-divider;
+}
+
+.code {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.bookBtn {
+  padding: 0 32rpx;
+  height: $button-height-sm;
+  border-radius: $radius-button;
+  background: $color-primary;
+  @include flex-center;
+
+  &:active {
+    opacity: 0.88;
+  }
+}
+
+.bookBtnDisabled {
+  background: $color-bg-hover;
+}
+
+.bookBtnText {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+}
+
+.bookBtnDisabled .bookBtnText {
+  color: $color-text-tertiary;
+}

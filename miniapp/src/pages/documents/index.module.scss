@@ -1,0 +1,127 @@
+@use '@/styles/variables.scss' as *;
+
+.search {
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  border: 2rpx solid $color-border;
+  padding: 0 24rpx;
+}
+
+.searchInput {
+  height: 80rpx;
+  font-size: $font-size-md;
+  color: $color-text-primary;
+}
+
+.placeholder {
+  color: $color-text-disabled;
+}
+
+.chips {
+  margin: $spacing-md 0;
+  white-space: nowrap;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 26rpx;
+  height: 60rpx;
+  margin-right: $spacing-sm;
+  border-radius: $radius-round;
+  background: $color-bg-card;
+  border: 2rpx solid $color-border;
+}
+
+.chipActive {
+  background: $color-primary;
+  border-color: $color-primary;
+}
+
+.chipText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.chipActive .chipText {
+  color: $color-text-white;
+  font-weight: $font-weight-medium;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.card {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+}
+
+.icon {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-md;
+  background: $color-primary-soft;
+  @include flex-center;
+  flex: none;
+}
+
+.iconText {
+  font-size: 20rpx;
+  font-weight: $font-weight-bold;
+  color: $color-primary-dark;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  display: block;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.meta {
+  display: block;
+  margin-top: 4rpx;
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  @include text-ellipsis;
+}
+
+.time {
+  display: block;
+  margin-top: 2rpx;
+  font-size: 20rpx;
+  color: $color-text-disabled;
+}
+
+.download {
+  flex: none;
+  padding: 0 24rpx;
+  height: 56rpx;
+  border-radius: $radius-button;
+  border: 2rpx solid $color-primary;
+  @include flex-center;
+}
+
+.downloading {
+  opacity: 0.6;
+}
+
+.downloadText {
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: $color-primary;
+}
