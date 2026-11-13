@@ -309,7 +309,9 @@ class-fund/
 ├── mcp/server.mjs       # MCP 工具服务（stdio，只读查询）
 ├── tests/api.test.js    # 接口自动化测试
 ├── docs/项目手册.md      # 开发/运维手册
-├── docs/设计报告.pdf     # 设计报告（需求、架构、测试方案、第三方组件声明）
+├── docs/设计报告.docx    # 设计报告（Word 版，可编辑）
+├── docs/设计报告.html    # 设计报告源文件（用于导出 Word / PDF）
+├── docs/设计报告.pdf     # 设计报告（导出版，便于直接查看）
 ├── docs/作品介绍-一页纸.pdf
 ├── deploy/              # Nginx 配置
 ├── Dockerfile
