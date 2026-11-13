@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<title>科协运营管理平台 设计报告</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", "Source Han Sans SC", sans-serif;
+    color: #1b2a24; font-size: 10.5pt; line-height: 1.75; margin: 0;
+  }
+  h1 { font-size: 21pt; margin: 0 0 6px; letter-spacing: 1px; color: #0b5a54; }
+  .sub { color: #5b6f68; font-size: 10pt; margin-bottom: 26px; }
+  h2 {
+    font-size: 14pt; color: #0f766e; margin: 26px 0 10px; padding-left: 10px;
+    border-left: 4px solid #0f766e; page-break-after: avoid;
+  }
+  h3 { font-size: 11.5pt; color: #123f38; margin: 16px 0 6px; page-break-after: avoid; }
+  p { margin: 6px 0; text-align: justify; }
+  ul, ol { margin: 6px 0 6px 20px; padding: 0; }
+  li { margin: 3px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 9.5pt; page-break-inside: avoid; }
+  th, td { border: 1px solid #cfdcd7; padding: 5px 8px; vertical-align: top; }
+  th { background: #eaf3f0; color: #123f38; text-align: left; font-weight: 600; }
+  code { background: #f1f5f3; padding: 1px 4px; border-radius: 3px; font-size: 9pt; color: #0b5a54; }
+  .cover { text-align: center; padding-top: 120px; page-break-after: always; }
+  .cover h1 { font-size: 26pt; }
+  .cover .meta { margin-top: 40px; color: #4c625b; font-size: 11pt; line-height: 2.2; }
+  .cover .line { width: 60px; height: 4px; background: #0f766e; margin: 18px auto; border-radius: 2px; }
+  .box { background: #f6faf8; border: 1px solid #dbe8e3; border-radius: 6px; padding: 12px 14px; margin: 10px 0; }
+  .arch { margin: 12px 0; }
+  .layer { display: flex; gap: 8px; margin: 6px 0; align-items: stretch; }
+  .layer .label {
+    width: 74px; flex: none; display: flex; align-items: center; justify-content: center;
+    background: #0f766e; color: #fff; border-radius: 5px; font-size: 9pt; font-weight: 600; text-align: center;
+  }
+  .layer .items { flex: 1; display: flex; gap: 6px; flex-wrap: wrap; }
+  .node {
+    flex: 1; min-width: 96px; border: 1px solid #cfdcd7; background: #fff; border-radius: 5px;
+    padding: 7px 8px; font-size: 8.8pt; text-align: center; color: #20423a;
+  }
+  .arrow { text-align: center; color: #8aa39b; font-size: 11pt; line-height: 1; margin: 1px 0; }
+  .kv { display: flex; gap: 10px; flex-wrap: wrap; margin: 8px 0; }
+  .kv .item { flex: 1; min-width: 150px; background: #f6faf8; border: 1px solid #dbe8e3; border-radius: 6px; padding: 8px 10px; }
+  .kv .k { font-size: 8.5pt; color: #6a7d76; }
+  .kv .v { font-size: 11pt; font-weight: 700; color: #0f766e; }
+  .small { font-size: 9pt; color: #5b6f68; }
+  .tag { display: inline-block; background: #eaf3f0; color: #0b5a54; border-radius: 3px; padding: 0 5px; font-size: 8.5pt; margin-right: 4px; }
+  .pagebreak { page-break-before: always; }
+  footer { margin-top: 28px; border-top: 1px solid #dbe8e3; padding-top: 8px; color: #889a93; font-size: 8.5pt; text-align: center; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="line"></div>
+  <h1>科协运营管理平台</h1>
+  <p class="sub">设计报告</p>
+  <div class="meta">
+    作品形式：Web 应用 + MCP 工具服务 + 微信小程序<br />
+    技术栈：Node.js · Express · node:sqlite · React · Taro · Docker<br />
+    文档版本：v1.0 &nbsp;|&nbsp; 日期：2026 年 11 月
+  </div>
+</div>
+
+<h2>1 项目概述</h2>
+<h3>1.1 背景</h3>
+<p>学生科技协会的日常运营涉及设备与 3D 打印预约、耗材发放、仪器借还、实验室门禁、元器件库存、活动组织、值班排班、资料归档等十余类事务。实际工作中，这些环节通常分散在微信群、纸质登记表、Excel 表格和多个网盘之间，导致三类问题：</p>
+<ul>
+  <li><strong>信息不透明</strong>：设备是否空闲、耗材还剩多少、门禁谁批准，只能靠人逐个询问。</li>
+  <li><strong>流程无留痕</strong>：借用、审批、发放等关键动作没有统一记录，出现损坏或丢失难以追溯。</li>
+  <li><strong>交接成本高</strong>：负责人换届后，历史数据、权限边界、操作规范都难以完整移交。</li>
+</ul>
+<p>本项目把上述业务收敛到一个统一平台，以「一套账号、一套权限、一套数据」覆盖科协运营全流程，并以多种形式对外提供能力：普通成员使用 Web 界面或微信小程序，管理者使用后台完成审批与统计，AI 助手可通过 MCP 工具服务查询运营数据。</p>
+
+<h3>1.2 目标</h3>
+<div class="kv">
+  <div class="item"><div class="k">业务覆盖</div><div class="v">12 个业务模块</div></div>
+  <div class="item"><div class="k">角色模型</div><div class="v">2 角色 + 8 权限</div></div>
+  <div class="item"><div class="k">部署方式</div><div class="v">Docker 三容器</div></div>
+  <div class="item"><div class="k">对外能力</div><div class="v">REST API / MCP</div></div>
+</div>
+<ul>
+  <li>业务在线化：预约、借还、报名、值班等高频操作全部线上完成，状态实时可见。</li>
+  <li>权限可配置：管理员按成员职责勾选权限，敏感操作（记账、改设备、看统计）逐接口校验。</li>
+  <li>部署低成本：单机 Docker Compose 一键启动，无需额外数据库服务，适合社团自建服务器或 NAS。</li>
+  <li>数据可追溯：关键写操作写入审计表，备份可下载、可整目录迁移。</li>
+</ul>
+
+<h2>2 需求分析</h2>
+<h3>2.1 用户与角色</h3>
+<table>
+  <tr><th style="width:18%">角色</th><th style="width:34%">职责</th><th>典型操作</th></tr>
+  <tr><td>管理员</td><td>平台维护、人员与权限管理、审批、数据导出</td><td>成员增删改、权限分配、预约审批、门禁审批、API 密钥签发、系统状态查看、数据备份</td></tr>
+  <tr><td>成员</td><td>日常使用，按被授予的权限扩展能力</td><td>设备预约、耗材领用、仪器借还、活动报名、查看值班、下载资料</td></tr>
+</table>
+<p>成员在「成员」角色基础上可叠加 8 项可配置权限：<code>finance</code>（记账）、<code>equipment</code>（设备管理）、<code>inventory</code>（库存管理）、<code>access</code>（门禁审批）、<code>activity</code>（活动管理）、<code>duty</code>（值班管理）、<code>doc</code>（资料管理）、<code>api</code>（API 调用）。这一设计替代了早期「财务员 / 技术员」的硬编码角色，避免角色爆炸。</p>
+
+<h3>2.2 功能需求</h3>
+<table>
+  <tr><th style="width:16%">模块</th><th style="width:44%">核心功能</th><th>关键约束</th></tr>
+  <tr><td>设备与预约</td><td>设备台账、分类、状态（可用/维护/停用）、预约申请、审批、开始/完成/取消、使用记录</td><td>同一设备时间段不可重叠；需审批的设备先进入待审核</td></tr>
+  <tr><td>3D 打印</td><td>打印机作为设备类型管理，打印任务按预约流程处理</td><td>复用预约冲突检测</td></tr>
+  <tr><td>耗材</td><td>耗材台账、入库/出库、领用记录、低库存预警</td><td>库存不得为负；变动写流水</td></tr>
+  <tr><td>仪器借还</td><td>借出登记、归还确认、逾期标记</td><td>未归还不可重复借出</td></tr>
+  <tr><td>维护记录</td><td>设备保养/维修登记、费用与责任人</td><td>关联设备，写审计</td></tr>
+  <tr><td>门禁</td><td>门禁申请、审批、通行记录</td><td>审批人与申请人权限分离</td></tr>
+  <tr><td>元器件库存</td><td>物料台账、入库/领用、盘点、低库存预警、流水</td><td>数量与阈值校验</td></tr>
+  <tr><td>成员与权限</td><td>成员创建/编辑/停用/重置密码、权限勾选、批量导入</td><td>仅管理员；不可删除自身</td></tr>
+  <tr><td>活动</td><td>活动发布、报名/取消、人数上限、报名截止、签到、报名名单导出</td><td>满员或截止后拒绝报名</td></tr>
+  <tr><td>值班</td><td>班次创建、人员分配、今日值班展示</td><td>同班次人员去重</td></tr>
+  <tr><td>资料归档</td><td>文档上传、分类、检索、下载</td><td>类型与大小白名单</td></tr>
+  <tr><td>统计与导出</td><td>运营总览、设备台账导出、账单导出、审计日志查询</td><td>按权限过滤数据范围</td></tr>
+</table>
+
+<h3>2.3 非功能需求</h3>
+<ul>
+  <li><strong>安全</strong>：口令不可逆存储、登录失败限流、接口级鉴权、全面审计、HTTPS 部署。</li>
+  <li><strong>可部署性</strong>：一条命令启动；数据目录可整体迁移；支持 x86 与 ARM（NAS）。</li>
+  <li><strong>可维护性</strong>：前后端分离、路由按业务拆分、统一错误处理与参数校验。</li>
+  <li><strong>可扩展性</strong>：对外提供 REST API 与 MCP 工具，便于接入 AI 助手或其他系统。</li>
+</ul>
+
+<h2>3 总体设计</h2>
+<h3>3.1 系统架构</h3>
+<div class="arch">
+  <div class="layer"><div class="label">接入层</div><div class="items">
+    <div class="node">Web 前端<br />React + Vite</div>
+    <div class="node">微信小程序<br />Taro + TS</div>
+    <div class="node">AI 助手<br />MCP 客户端</div>
+    <div class="node">第三方系统<br />REST + API Key</div>
+  </div></div>
+  <div class="arrow">▼</div>
+  <div class="layer"><div class="label">网关层</div><div class="items">
+    <div class="node">Nginx<br />TLS 终止 / 静态资源 / 反向代理</div>
+  </div></div>
+  <div class="arrow">▼</div>
+  <div class="layer"><div class="label">应用层</div><div class="items">
+    <div class="node">Express 应用<br />鉴权 / 业务路由 / 文件上传 / 导出</div>
+    <div class="node">Worker 进程<br />备份 / 定时任务 / 状态上报</div>
+    <div class="node">MCP 服务<br />stdio 工具封装</div>
+  </div></div>
+  <div class="arrow">▼</div>
+  <div class="layer"><div class="label">数据层</div><div class="items">
+    <div class="node">SQLite（WAL）<br />业务表 / 审计表</div>
+    <div class="node">文件目录<br />上传文件 / 备份包</div>
+  </div></div>
+</div>
+<p>三个进程通过同一数据目录协作：Web 与 API 由应用进程处理，备份与定时任务交给独立的 worker 进程，MCP 服务以只读方式调用 REST API。容器化部署时三者由 Docker Compose 编排，Nginx 容器仅对宿主机暴露一个端口。</p>
+
+<h3>3.2 技术选型</h3>
+<table>
+  <tr><th style="width:18%">层次</th><th style="width:30%">选型</th><th>理由</th></tr>
+  <tr><td>运行时</td><td>Node.js 22.5+</td><td>内置 <code>node:sqlite</code>，无需编译原生模块，镜像构建稳定</td></tr>
+  <tr><td>Web 框架</td><td>Express 4</td><td>生态成熟、中间件模型简单，适合中小型业务系统</td></tr>
+  <tr><td>数据库</td><td>SQLite（WAL 模式）</td><td>单机零运维、单文件易备份；社团量级完全够用</td></tr>
+  <tr><td>前端</td><td>React 18 + Vite 6</td><td>组件化开发、构建快、产物可由 Nginx 直接托管</td></tr>
+  <tr><td>小程序</td><td>Taro 4 + TypeScript</td><td>一套代码可编译到微信小程序与 H5，便于预览验证</td></tr>
+  <tr><td>部署</td><td>Docker Compose</td><td>环境一致、一键启停、健康检查与自动重启</td></tr>
+  <tr><td>测试</td><td>Vitest + Supertest</td><td>直接对 HTTP 接口做端到端断言，覆盖鉴权与业务规则</td></tr>
+</table>
+
+<h3>3.3 总体方案</h3>
+<p>系统采用「一个后端、多端接入、按业务垂直拆分」的总体方案：后端以 Express 提供统一的 REST API，鉴权、参数校验、错误处理、审计下沉为公共中间件，业务按设备、库存、门禁、活动、值班、资料、经费、系统八条路由线拆分；Web 前端与微信小程序复用同一套接口，MCP 服务在接口之上做只读封装。由此保证三端看到的权限边界、数据口径与审计记录完全一致。</p>
+<p>实现路径按依赖关系推进：先完成账号、权限与审计骨架，再实现设备预约（含冲突检测）、耗材与元器件库存、仪器借还，随后补齐门禁、活动、值班、资料与经费台账，最后完成统计导出、API Key、MCP 工具与容器化部署。每一步都以可运行的接口和测试用例作为完成标准，避免「先堆界面后补逻辑」。</p>
+<table>
+  <tr><th style="width:20%">交付形态</th><th style="width:34%">面向对象</th><th>能力边界</th></tr>
+  <tr><td>Web 应用</td><td>社团成员、管理员</td><td>全部业务操作与后台管理</td></tr>
+  <tr><td>微信小程序</td><td>移动端成员</td><td>登录、预约、库存查询、活动报名、资料下载</td></tr>
+  <tr><td>MCP 工具服务</td><td>AI 助手 / Agent</td><td>七类只读查询，写操作仍回到 Web 界面</td></tr>
+  <tr><td>REST API + API Key</td><td>第三方系统</td><td>按持有人权限开放全部业务接口</td></tr>
+</table>
+
+<h2>4 数据设计</h2>
+<h3>4.1 核心数据表</h3>
+<table>
+  <tr><th style="width:24%">表</th><th style="width:40%">主要内容</th><th>说明</th></tr>
+  <tr><td><code>users</code></td><td>账号、口令哈希、角色、权限数组、状态、token_version</td><td>权限以 JSON 数组存储，便于扩展</td></tr>
+  <tr><td><code>transactions</code> / <code>categories</code></td><td>收支流水、分类、附件</td><td>保留班费记账能力</td></tr>
+  <tr><td><code>equipment</code> / <code>equipment_bookings</code></td><td>设备台账、预约时间段、审批状态、用途</td><td>冲突检测依赖时间段区间比较</td></tr>
+  <tr><td><code>consumables</code> / <code>consumable_logs</code></td><td>耗材库存与出入库流水</td><td>库存变动成对写入</td></tr>
+  <tr><td><code>inventory_items</code> / <code>inventory_logs</code></td><td>元器件库存、预警阈值、流水</td><td>台账与流水分离</td></tr>
+  <tr><td><code>borrows</code></td><td>借出人、设备/仪器、借出与归还时间</td><td>未归还记录用于逾期提醒</td></tr>
+  <tr><td><code>access_requests</code></td><td>门禁申请、审批人、结果</td><td>审批留痕</td></tr>
+  <tr><td><code>activities</code> / <code>activity_signups</code></td><td>活动信息、报名状态、签到时间</td><td>人数上限在事务内校验</td></tr>
+  <tr><td><code>duty_shifts</code> / <code>duty_assignments</code></td><td>班次时间地点、值班人员</td><td>支持多人同班</td></tr>
+  <tr><td><code>documents</code></td><td>文件名、分类、大小、上传人</td><td>文件落盘，元数据入库</td></tr>
+  <tr><td><code>audit_logs</code></td><td>操作人、动作、对象、IP、UA、时间</td><td>事后追溯依据</td></tr>
+  <tr><td><code>api_keys</code></td><td>密钥哈希、前缀、有效期、撤销状态</td><td>明文不落库</td></tr>
+  <tr><td><code>login_failures</code></td><td>来源+账号、失败次数、时间窗</td><td>限流状态持久化</td></tr>
+</table>
+<p>设计原则：台账表只存「当前值」，所有数量变化另写流水表，既保证查询快，又能还原历史。删除类操作以状态字段代替物理删除（设备停用、成员禁用、物料归档），避免破坏历史关联。</p>
+
+<h3>4.2 数据存储</h3>
+<p>数据库文件位于数据目录下的 <code>classfund.db</code>，开启 WAL 模式以支持读写并发；上传文件存 <code>uploads/</code>，每日备份存 <code>backups/</code>。生产部署将该目录挂载进容器，升级镜像不影响数据。</p>
+
+<h2>5 功能设计</h2>
+<h3>5.1 设备预约（含 3D 打印）</h3>
+<p>成员选择设备、填写时间段与用途提交预约。系统先校验设备状态与时间合法性，再检查该设备是否存在时间重叠的有效预约；重叠则返回 409 并提示冲突时段。需审批设备进入「待审核」，管理员审批通过后方可使用。使用结束由设备管理员标记完成，或由系统按结束时间自动关闭。</p>
+<div class="box">
+  <strong>冲突判定</strong>：两条预约重叠的充要条件是 <code>已有开始 &lt; 新结束 且 已有结束 &gt; 新开始</code>。该判断由数据库执行，避免把全量数据拉到应用层过滤。
+</div>
+
+<h3>5.2 库存与借还</h3>
+<p>耗材与元器件均采用「台账 + 流水」模型。入库、领用、盘点都写一条流水，台账数量在事务内更新，任何一步失败整体回滚。数量低于预警阈值时在首页与库存页高亮，并在运营总览中计数。</p>
+
+<h3>5.3 活动与值班</h3>
+<p>活动支持草稿、开放、关闭、结束、取消五种状态，报名受截止时间与人数上限双重约束，满员返回明确提示；报名与取消均写审计。值班按班次组织，可指定多人、填写地点与容量，首页展示「今日值班」及「我是否在班」。</p>
+
+<h3>5.4 成员与权限</h3>
+<p>管理员创建成员时指定角色与权限；编辑时按需勾选八项能力。权限判断集中在服务端中间件：请求进入业务逻辑前先解析身份，再比对所需权限键。前端只负责隐藏入口，不作为安全边界。成员被停用或改密时，其已签发令牌通过版本号机制立即失效。</p>
+
+<h3>5.5 资料与导出</h3>
+<p>资料按分类归档，上传时校验扩展名与大小上限，下载走鉴权接口而非公开静态目录。导出支持设备台账（全部或按类型）、账单与审计日志，输出 CSV/Excel，中文编码处理避免乱码。</p>
+
+<h2>6 关键技术实现</h2>
+<h3>6.1 身份认证与令牌吊销</h3>
+<p>登录成功后签发 HS256 JWT，有效期 7 天。令牌可经三种方式携带：httpOnly Cookie（网页）、<code>Authorization: Bearer</code>（小程序与 API 调用）、查询参数（文件下载场景）。服务端不维护会话表，但每次鉴权都会读取用户当前状态与 <code>token_version</code>，与令牌载荷比对；改密、重置、停用都会使版本号加一，从而让旧令牌全部失效。首次登录强制修改初始密码。</p>
+
+<h3>6.2 登录限流</h3>
+<p>以「来源 IP + 账号」为键统计失败次数，15 分钟内达到 5 次即拒绝登录并提示稍后再试。计数写入数据库而非内存，进程重启后依然生效，避免攻击者通过重启绕过。成功登录后清除计数。</p>
+
+<h3>6.3 API 密钥</h3>
+<p>管理员或具备 <code>api</code> 权限的成员可签发密钥，明文仅在创建时展示一次，数据库只存 SHA-256 摘要。调用时通过 <code>X-API-Key</code> 或 <code>Authorization: ApiKey</code> 携带；密钥继承持有人权限，且必须满足 <code>api</code> 权限；单密钥按分钟限流，撤销或过期立即失效。</p>
+
+<h3>6.4 MCP 工具服务</h3>
+<p>为满足「以 MCP 工具服务形式交付」的要求，项目在不引入额外依赖的前提下实现了一个 MCP stdio 服务，通过 JSON-RPC 处理 <code>initialize</code>、<code>tools/list</code>、<code>tools/call</code>，将设备、库存、耗材、活动、预约、运营总览、资料检索七类查询封装为工具。工具内部复用 REST API 与 API Key 鉴权，因此无需在 MCP 层重复实现权限体系；所有工具均为只读，写操作仍回到 Web 界面，降低 Agent 误操作风险。</p>
+
+<h3>6.5 容器化与进程协作</h3>
+<p>镜像采用多阶段构建：先构建前端产物，再安装服务端生产依赖，最终镜像同时包含静态资源与 API 服务。Compose 定义应用、worker、Nginx 三个服务，应用与 worker 共享数据卷，Nginx 依赖应用健康检查通过后启动，从而避免「容器起来了但接口未就绪」。</p>
+
+<h2>7 安全设计</h2>
+<table>
+  <tr><th style="width:22%">威胁</th><th style="width:40%">对策</th><th>实现位置</th></tr>
+  <tr><td>口令泄露</td><td>BCrypt（cost 10）单向哈希；初始密码强制修改</td><td>账号模块</td></tr>
+  <tr><td>暴力破解</td><td>IP+账号 15 分钟 5 次锁定，计数持久化</td><td>登录接口</td></tr>
+  <tr><td>令牌被盗</td><td>HTTPS；httpOnly + SameSite；token_version 即时吊销</td><td>鉴权中间件</td></tr>
+  <tr><td>越权访问</td><td>逐接口权限中间件；管理员专属接口二次校验</td><td>全部写接口</td></tr>
+  <tr><td>SQL 注入</td><td>全部使用参数化查询，禁止拼接用户输入</td><td>数据访问层</td></tr>
+  <tr><td>恶意上传</td><td>扩展名白名单 + 单文件大小上限 + 鉴权下载</td><td>资料/附件模块</td></tr>
+  <tr><td>密钥外泄</td><td>API Key 只存摘要、可撤销、按分钟限流</td><td>API 管理</td></tr>
+  <tr><td>跨站请求</td><td>CORS 来源白名单；安全响应头（nosniff、SAMEORIGIN、Referrer-Policy）</td><td>应用入口</td></tr>
+  <tr><td>事后追责</td><td>写操作记录操作人、动作、对象、IP、UA</td><td>审计表</td></tr>
+</table>
+<p class="small">已知边界：未接入 WAF 与双因素认证；单机部署不具备异地容灾；DDoS 依赖云厂商防护；密钥文件需管理员妥善保管。</p>
+
+<h2>8 部署与运维</h2>
+<h3>8.1 部署结构</h3>
+<ul>
+  <li>宿主机安装 Docker 与 Compose，项目目录包含 <code>docker-compose.yml</code> 与数据目录。</li>
+  <li>应用容器监听内部端口，仅由 Nginx 容器访问；Nginx 对外暴露单一端口。</li>
+  <li>如需 HTTPS，由宿主机 Nginx 或云负载均衡终止 TLS 后转发至容器端口。</li>
+  <li>支持 NAS 部署：本地磁盘目录挂载数据卷，避免使用网络文件系统（SQLite 依赖文件锁）。</li>
+</ul>
+
+<h3>8.2 升级与备份</h3>
+<ul>
+  <li>升级：拉取代码后执行 <code>docker compose up -d --build</code>，数据卷不受影响。</li>
+  <li>备份：worker 每日生成备份包并保留最近 14 天，管理员可一键立即备份并下载。</li>
+  <li>恢复：停止服务，替换数据目录，重启即可；数据库与上传文件同目录，保证一致性。</li>
+  <li>可观测：管理员「运行状态」展示版本、运行时长、内存、数据库体积、worker 在线状态与最近备份时间。</li>
+</ul>
+
+<h3>8.3 交付物与复现清单</h3>
+<p>为便于评测人员直接部署与验证，仓库根目录提供以下交付物，均已在公开仓库中可获取：</p>
+<table>
+  <tr><th style="width:26%">交付物</th><th style="width:30%">位置</th><th>说明</th></tr>
+  <tr><td>作品源代码</td><td><code>server/</code>、<code>web/</code>、<code>miniapp/</code>、<code>mcp/</code></td><td>后端、前端、小程序、MCP 服务全部源码</td></tr>
+  <tr><td>Dockerfile</td><td><code>Dockerfile</code></td><td>多阶段构建，产出含静态资源与 API 的运行镜像</td></tr>
+  <tr><td>Docker Compose 配置</td><td><code>docker-compose.yml</code></td><td>app / worker / nginx 三服务编排，含健康检查</td></tr>
+  <tr><td>部署说明</td><td><code>README.md</code>「快速开始」「配置项」</td><td>环境变量、启动步骤、端口与数据目录</td></tr>
+  <tr><td>使用说明</td><td><code>README.md</code>、<code>docs/项目手册.md</code></td><td>功能入口、权限模型、外部 API 与 MCP 用法</td></tr>
+  <tr><td>示例数据</td><td><code>npm run seed:demo</code></td><td>六个演示账号与设备、耗材、预约、活动、账单等样例数据</td></tr>
+  <tr><td>测试方法与接口</td><td><code>tests/api.test.js</code>、README「评测验证指引」</td><td>自动化用例、健康检查、运行状态、审计日志查询入口</td></tr>
+  <tr><td>许可证</td><td><code>LICENSE</code></td><td>Apache License 2.0</td></tr>
+</table>
+
+<h2>9 测试与验证</h2>
+<h3>9.1 测试方案与测试环境</h3>
+<p>测试分三层：<strong>接口自动化测试</strong>覆盖鉴权、权限与业务规则；<strong>场景化验证</strong>针对并发、越权、限流等难以用单条断言描述的路径，用脚本与多账号实测；<strong>部署验证</strong>在真实服务器上用容器化方式启动并逐项检查。</p>
+<table>
+  <tr><th style="width:22%">项目</th><th>内容</th></tr>
+  <tr><td>测试框架</td><td>Vitest 5 + Supertest 7，直接对 Express 实例发起 HTTP 请求</td></tr>
+  <tr><td>运行方式</td><td><code>npm test</code>；每条用例使用独立的临时数据目录，互不干扰</td></tr>
+  <tr><td>用例规模</td><td>38 个自动化用例 + 6 个场景化验证项 + 部署验证清单</td></tr>
+  <tr><td>验证环境</td><td>Linux（Ubuntu）+ Docker 24 / Compose v2，Node.js 24 容器内运行，SQLite WAL</td></tr>
+  <tr><td>判定标准</td><td>用例全部通过；异常路径返回预期状态码（401/403/409/429）；审计表有对应记录</td></tr>
+</table>
+
+<h3>9.2 自动化测试</h3>
+<p>测试基于 Vitest + Supertest，直接对 HTTP 接口断言，共 38 个用例，覆盖：登录成功/失败与限流、未登录访问拒绝、越权访问返回 403、成员权限配置生效、设备预约与冲突拒绝、库存出入库与预警、活动报名上限、资料上传类型校验、API Key 签发与鉴权、CORS 预检、系统状态仅管理员可见等。</p>
+
+<h3>9.3 关键场景验证</h3>
+<table>
+  <tr><th style="width:32%">场景</th><th style="width:34%">方法</th><th>结果</th></tr>
+  <tr><td>并发预约同一设备同一时段</td><td>两个账号同时提交重叠预约</td><td>一个成功、一个 409</td></tr>
+  <tr><td>普通成员直接调用管理接口</td><td>使用成员令牌请求成员删除接口</td><td>403，且写入审计</td></tr>
+  <tr><td>登录暴力破解</td><td>连续错误 5 次后重试</td><td>锁定并提示，重启后仍生效</td></tr>
+  <tr><td>改密后旧令牌</td><td>改密前保存令牌，改密后继续使用</td><td>401，需重新登录</td></tr>
+  <tr><td>API Key 撤销</td><td>撤销后再次调用</td><td>401</td></tr>
+  <tr><td>容器化部署</td><td>服务器上构建启动并访问健康检查</td><td>健康检查 200，页面与接口正常</td></tr>
+</table>
+
+<h3>9.4 部署验证结果</h3>
+<ul>
+  <li><code>docker compose ps</code>：app、worker、nginx 三容器均为 healthy，<code>restart: unless-stopped</code> 生效。</li>
+  <li><code>GET /api/v1/health</code>：返回 <code>{"ok":true,"version":"1.0.0"}</code>。</li>
+  <li>演示账号登录：admin、finance01、equip01、tech01、access01、media01 六个账号全部返回 200，错误口令返回 401。</li>
+  <li><code>GET /api/v1/system/status</code>：管理员可获取版本、运行时长、内存、数据库体积、worker 在线状态与最近备份。</li>
+  <li><code>GET /api/v1/logs</code>：可检索到登录、审批、导出等审计记录；普通成员访问返回 403。</li>
+</ul>
+
+<h2>10 创新点与展望</h2>
+<h3>10.1 创新点</h3>
+<ul>
+  <li><strong>一平台多形态</strong>：同一套后端同时服务 Web、小程序与 MCP 工具，权限与审计口径统一。</li>
+  <li><strong>权限可配置而非角色堆叠</strong>：两角色 + 八权限的组合，比传统「财务员/技术员/管理员」更贴合社团人员流动。</li>
+  <li><strong>零外部依赖的持久化方案</strong>：内置 SQLite + 单文件备份，让社团无需数据库运维能力也能长期运行。</li>
+  <li><strong>可解释的安全设计</strong>：令牌吊销、限流、密钥摘要等机制均有明确的威胁对应关系，便于评审与交接。</li>
+</ul>
+
+<h3>10.2 不足与改进方向</h3>
+<ul>
+  <li>目前为单机单实例，无高可用；后续可引入对象存储做异地备份，并增加监控告警。</li>
+  <li>未接入统一身份认证（学校 SSO）与双因素认证，可作为下一阶段安全增强。</li>
+  <li>MCP 工具当前只读，后续可在审批场景引入「人工确认后执行」的写操作工具。</li>
+  <li>小程序端可继续补充扫码借还、消息订阅提醒等移动端特性。</li>
+</ul>
+
+<h2>11 代码结构与自主完成说明</h2>
+<h3>11.1 代码组织与自研范围</h3>
+<table>
+  <tr><th style="width:26%">目录</th><th style="width:38%">内容</th><th>自主完成</th></tr>
+  <tr><td><code>server/src/app.js</code>、<code>db.js</code>、<code>auth.js</code></td><td>应用装配、建表与迁移、事务封装、鉴权与权限中间件</td><td>全部自研</td></tr>
+  <tr><td><code>server/src/routes/</code></td><td>设备、预约、耗材、元器件、借还、门禁、活动、值班、资料、经费、成员、API Key、系统、日志等路由</td><td>全部自研</td></tr>
+  <tr><td><code>server/src/worker.js</code>、<code>backup.js</code></td><td>定时维护任务与备份生成</td><td>全部自研</td></tr>
+  <tr><td><code>server/src/seed.js</code></td><td>演示账号与示例数据生成</td><td>全部自研</td></tr>
+  <tr><td><code>web/src/</code></td><td>React 页面、组件、接口封装与路由</td><td>全部自研</td></tr>
+  <tr><td><code>miniapp/src/</code></td><td>Taro 小程序页面、请求封装与登录态管理</td><td>全部自研</td></tr>
+  <tr><td><code>mcp/server.mjs</code></td><td>MCP stdio 服务与七个只读工具</td><td>全部自研，未依赖 MCP 官方 SDK</td></tr>
+  <tr><td><code>tests/api.test.js</code></td><td>接口自动化测试</td><td>全部自研</td></tr>
+  <tr><td><code>Dockerfile</code>、<code>docker-compose.yml</code>、<code>deploy/</code></td><td>镜像构建、服务编排、Nginx 配置</td><td>全部自研</td></tr>
+</table>
+<p>以上自研代码随报告一并提交，完整可运行，不依赖任何未公开的私有模块。</p>
+
+<h3>11.2 第三方组件、开源项目与外部服务</h3>
+<table>
+  <tr><th style="width:20%">名称</th><th style="width:14%">许可证</th><th style="width:36%">用途与使用范围</th><th>来源</th></tr>
+  <tr><td>Express 4</td><td>MIT</td><td>HTTP 框架，承载全部 REST 接口；未修改源码</td><td><code>expressjs.com</code></td></tr>
+  <tr><td>bcryptjs 3</td><td>BSD-3-Clause</td><td>口令单向哈希（cost 10）</td><td><code>github.com/dcodeIO/bcrypt.js</code></td></tr>
+  <tr><td>jsonwebtoken 9</td><td>MIT</td><td>HS256 令牌签发与校验</td><td><code>github.com/auth0/node-jsonwebtoken</code></td></tr>
+  <tr><td>cookie-parser 1</td><td>MIT</td><td>Cookie 解析，用于 Web 端令牌读取</td><td><code>github.com/expressjs/cookie-parser</code></td></tr>
+  <tr><td>multer 2</td><td>MIT</td><td>资料与附件上传</td><td><code>github.com/expressjs/multer</code></td></tr>
+  <tr><td>exceljs 4</td><td>MIT</td><td>台账、账单、审计日志的 Excel 导入导出</td><td><code>github.com/exceljs/exceljs</code></td></tr>
+  <tr><td>archiver 7</td><td>MIT</td><td>多文件 ZIP 打包导出</td><td><code>github.com/archiverjs/node-archiver</code></td></tr>
+  <tr><td>React 18 / React Router 6</td><td>MIT</td><td>前端组件与路由</td><td><code>react.dev</code>、<code>reactrouter.com</code></td></tr>
+  <tr><td>Vite 6</td><td>MIT</td><td>前端开发与构建</td><td><code>vite.dev</code></td></tr>
+  <tr><td>Vitest 5 / Supertest 7</td><td>MIT</td><td>接口测试与断言</td><td><code>vitest.dev</code>、<code>github.com/ladjs/supertest</code></td></tr>
+  <tr><td>ESLint 10 / Prettier 3</td><td>MIT</td><td>代码检查与格式化，仅开发期使用</td><td><code>eslint.org</code>、<code>prettier.io</code></td></tr>
+  <tr><td>Node.js 24</td><td>MIT</td><td>运行时；内置 <code>node:sqlite</code> 提供数据库能力，未引入原生扩展</td><td><code>nodejs.org</code></td></tr>
+  <tr><td>Nginx 1.27（Alpine 镜像）</td><td>BSD-2-Clause</td><td>反向代理与静态资源托管</td><td><code>nginx.org</code></td></tr>
+  <tr><td>Alpine Linux</td><td>MIT 等</td><td>容器基础镜像</td><td><code>alpinelinux.org</code></td></tr>
+  <tr><td>微信小程序登录接口</td><td>腾讯服务条款</td><td><strong>可选</strong>外部服务：仅在配置 <code>WX_APPID</code>/<code>WX_SECRET</code> 时用于 <code>code2session</code> 免密登录；未配置则完全不走该链路</td><td><code>developers.weixin.qq.com</code></td></tr>
+</table>
+<p>上述组件均按其原始许可证使用，未修改其源代码，完整许可证文本见各组件的发行包。项目自身以 Apache License 2.0 发布。</p>
+
+<h3>11.3 自动生成代码与 AI 辅助说明</h3>
+<ul>
+  <li>项目未使用代码生成器批量产出业务代码；<code>package-lock.json</code> 由 npm 自动生成，属于依赖锁定文件，不属于作品逻辑。</li>
+  <li>开发过程中使用 AI 编程助手进行<strong>辅助编写、代码审查与文档润色</strong>，所有生成内容均经团队成员逐行阅读、修改、运行验证后纳入代码库，团队对全部代码的行为与质量负责。</li>
+  <li>未引入任何预训练模型权重、第三方数据集或商业 AI 服务参与运行时逻辑；系统中的全部演示数据由 <code>seed.js</code> 脚本生成，不含真实个人信息。</li>
+  <li>作品运行时不调用除微信登录（可选）以外的任何外部服务，数据完全保存在本地 SQLite 与文件目录中。</li>
+</ul>
+
+<h2>附录 A 演示账号与验证入口</h2>
+<p>执行 <code>docker compose exec app npm run seed:demo</code> 后，以下账号可直接登录（浏览器访问 <code>http://1.14.125.216/</code> 或本机 <code>http://localhost:8080</code>），统一密码 <code>Kx@2026demo</code>，且不强制首次改密：</p>
+<table>
+  <tr><th style="width:20%">账号</th><th style="width:28%">角色 / 权限</th><th>验证内容</th></tr>
+  <tr><td><code>admin</code></td><td>管理员</td><td>成员与权限配置、各类审批、运行状态、审计日志、API 密钥、数据备份</td></tr>
+  <tr><td><code>finance01</code></td><td>成员 + 经费（收入/支出）</td><td>收支记账、账单导出、凭证审核</td></tr>
+  <tr><td><code>equip01</code></td><td>成员 + 设备、库存</td><td>设备台账、预约审批、耗材与元器件出入库</td></tr>
+  <tr><td><code>tech01</code></td><td>成员 + 设备、库存、值班、API</td><td>设备维护记录、值班排班、API Key 签发与外部调用</td></tr>
+  <tr><td><code>access01</code></td><td>成员 + 门禁、值班</td><td>门禁申请与审批、通行记录</td></tr>
+  <tr><td><code>media01</code></td><td>成员 + 活动、资料</td><td>活动发布与报名、资料上传与下载</td></tr>
+</table>
+<p class="small">复查入口：<code>GET /api/v1/health</code>（免登录）、<code>GET /api/v1/system/status</code>（管理员）、<code>GET /api/v1/logs</code>（管理员）。若需恢复初始状态，删除数据目录后重新启动并再次执行 seed 脚本。</p>
+
+<h2>附录 B 主要接口</h2>
+<table>
+  <tr><th style="width:36%">接口</th><th>说明</th></tr>
+  <tr><td><code>POST /api/v1/auth/login</code></td><td>账号密码登录，返回令牌与用户信息</td></tr>
+  <tr><td><code>GET /api/v1/summary/operations</code></td><td>运营总览：待审核、门禁、活动、低库存、今日值班</td></tr>
+  <tr><td><code>GET/POST /api/v1/equipment</code>、<code>/equipment/bookings</code></td><td>设备台账与预约（含审批、取消、完成）</td></tr>
+  <tr><td><code>GET/POST /api/v1/inventory</code>、<code>/inventory/:id/stock</code></td><td>元器件库存与出入库</td></tr>
+  <tr><td><code>GET/POST /api/v1/activities</code>、<code>/activities/:id/signup</code></td><td>活动与报名</td></tr>
+  <tr><td><code>GET/POST /api/v1/documents</code></td><td>资料归档与下载</td></tr>
+  <tr><td><code>GET /api/v1/system/status</code></td><td>运行状态（仅管理员）</td></tr>
+  <tr><td><code>POST /api/v1/api-keys</code></td><td>签发 API 密钥</td></tr>
+</table>
+
+<footer>科协运营管理平台 · 设计报告 · 1.0</footer>
+</body>
+</html>

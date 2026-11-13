@@ -53,6 +53,10 @@ function ensureDemoUsers() {
       const found = db.prepare('SELECT id FROM users WHERE username = ?').get(username);
       if (found) {
         userIds[username] = found.id;
+        // 评测需要：把已存在演示账号的密码重置为统一密码，并解除首次改密限制
+        db.prepare(
+          "UPDATE users SET password_hash = ?, must_change_password = 0, status = 'active', token_version = token_version + 1 WHERE id = ?",
+        ).run(DEMO_HASH, found.id);
         continue;
       }
       userIds[username] = Number(
@@ -73,6 +77,14 @@ function ensureDemoUsers() {
       );
     }
   });
+  // 评测需要：管理员密码统一重置，避免因遗忘密码导致无法验证
+  const admin = db.prepare("SELECT id FROM users WHERE username = 'admin'").get();
+  if (admin) {
+    db.prepare(
+      "UPDATE users SET password_hash = ?, must_change_password = 0, status = 'active', token_version = token_version + 1 WHERE id = ?",
+    ).run(DEMO_HASH, admin.id);
+    console.log(`管理员账号 admin 的密码已重置为 ${DEMO_PASSWORD}`);
+  }
   return userIds;
 }
 
@@ -569,7 +581,7 @@ function main() {
   console.log('演示数据写入完成。');
   console.log(`演示账号：finance01 / equip01 / tech01 / access01 / media01，统一密码 ${DEMO_PASSWORD}`);
   console.log('其中 tech01 已开启「API 调用」权限，可在「API 管理」中签发密钥。');
-  console.log('管理员账号：admin（首次登录需修改密码）。');
+  console.log(`管理员账号：admin，密码已同步重置为 ${DEMO_PASSWORD}（便于评测验证）。`);
 }
 
 main();

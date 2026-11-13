@@ -64,9 +64,9 @@ docker compose ps
 docker compose logs -f app
 ```
 
-访问 <http://localhost:8080>（nginx 仅绑定 `127.0.0.1:8080`，对外由宿主机 Nginx 终止 TLS 并反代）。数据持久化在项目根目录 `./data`，备份时直接打包该目录即可。
+访问 <http://localhost:8080>（容器 Nginx 绑定宿主机 8080，可直接使用，也可在前面再挂一层宿主机 Nginx 终止 TLS）。数据持久化在项目根目录 `./data`，备份时直接打包该目录即可。
 
-初始管理员：`admin / Admin@123456`，首次登录强制修改密码。
+初始管理员：`admin / Admin@123456`，首次登录强制修改密码（执行 `seed:demo` 后统一改为 `Kx@2026demo`，见下节）。
 
 ### 载入演示数据
 
@@ -76,7 +76,7 @@ docker compose exec app npm run seed:demo
 
 | 账号 | 密码 | 权限 |
 |---|---|---|
-| `admin` | `Admin@123456` | 管理员（全部权限） |
+| `admin` | `Kx@2026demo` | 管理员（全部权限） |
 | `finance01` | `Kx@2026demo` | 经费台账（收入/支出） |
 | `equip01` | `Kx@2026demo` | 设备、库存 |
 | `tech01` | `Kx@2026demo` | 设备、库存、值班、API 调用 |
@@ -84,6 +84,8 @@ docker compose exec app npm run seed:demo
 | `media01` | `Kx@2026demo` | 活动、资料 |
 
 演示数据仅在设备表为空时写入，重复执行不会产生重复记录。
+
+> 为防止遗忘口令导致无法验证，`seed:demo` 每次执行都会把上述账号（含 `admin`）的密码重置为 `Kx@2026demo`，并解除首次登录强制改密。若需自定义口令，登录后在「我的 → 修改密码」中修改即可；再次执行 `seed:demo` 会重新回到统一口令。
 
 ### 本地开发
 
@@ -113,6 +115,71 @@ npm run seed:demo    # 写入演示数据
 - 真机/开发者工具调试需在小程序后台把后端域名加入「request 合法域名」；本地联调可临时勾选「不校验合法域名」
 - 后端需允许跨域：H5 预览时以 `CORS_ORIGINS=*`（或具体来源）启动，小程序端请求不受微信同源限制
 - 微信免密登录：首次用账号密码登录后在「我的 → 微信免密登录」绑定；绑定后小程序启动时用 `wx.login` 的 code 静默换取 JWT，无需再输密码。服务端需配置 `WX_APPID` / `WX_SECRET`（`POST /api/v1/auth/wechat/login`、`/wechat/bind`），openid 存在 `users.wx_openid` 且唯一，一个微信只能绑定一个账号，可随时解绑
+
+## 评测验证指引
+
+以下步骤可在 5 分钟内完成「部署是否成功、核心功能是否可用」的验证，无需额外配置。
+
+**在线演示环境**：<http://1.14.125.216/>（已用 Docker Compose 部署，含演示数据）
+
+1. **健康检查（无需登录）**
+
+```bash
+curl http://1.14.125.216/api/v1/health
+# {"ok":true,"version":"1.0.0","time":"..."}
+```
+
+2. **登录并取得令牌**
+
+```bash
+curl -X POST http://1.14.125.216/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"Kx@2026demo"}'
+```
+
+响应中的 `token` 用于后续请求；浏览器直接访问站点时也可用同一账号在页面登录。
+
+3. **运行状态（需管理员）**
+
+```bash
+curl -H "Authorization: Bearer <token>" http://1.14.125.216/api/v1/system/status
+```
+
+返回应用版本、运行时长、内存占用、数据库大小、worker 在线状态、备份数量与最近备份时间。
+
+4. **审计日志（需管理员）**
+
+```bash
+curl -H "Authorization: Bearer <token>" "http://1.14.125.216/api/v1/logs?q=login"
+```
+
+页面入口：登录后「设置 → 操作日志」，可按操作类型、操作人、日期与关键字筛选。
+
+5. **日志与进程状态**
+
+```bash
+docker compose ps                  # 三个容器的健康状态
+docker compose logs -f app         # 应用日志（含请求与错误）
+docker compose logs -f worker      # 定时任务日志
+docker compose exec app ps -o pid,etime,cmd   # 进程存活与运行时长
+```
+
+6. **自动化测试**
+
+```bash
+npm test                           # Vitest + Supertest，覆盖鉴权、权限、并发、限流等用例
+```
+
+7. **MCP 工具服务**
+
+```bash
+KX_API_URL=http://1.14.125.216/api/v1 KX_API_KEY=cfk_xxx \
+  node mcp/server.mjs              # 也可在支持 MCP 的客户端中配置，见下文
+```
+
+`cfk_xxx` 需先用 `tech01`（或管理员）登录，在「API 管理」中签发。
+
+8. **数据重置**：删除 `./data` 目录后重新 `docker compose up -d`，再执行 `docker compose exec app npm run seed:demo` 即可回到初始演示状态。
 
 ## 配置项
 
@@ -160,6 +227,32 @@ curl -H "Authorization: ApiKey cfk_xxxxxxxx" http://localhost:8787/api/v1/equipm
 - 单密钥默认 120 次/分钟，超出返回 `429`。
 - 撤销、过期或持有人被停用后立即失效。
 - 浏览器跨域调用需在 `CORS_ORIGINS` 中登记来源。
+
+## MCP 工具服务
+
+`mcp/server.mjs` 以 MCP（Model Context Protocol）stdio 形式包装了只读查询能力，AI 助手/Agent 可直接调用，底层复用上面的 REST API 与 API Key 鉴权，**零额外依赖**。
+
+提供的工具：`list_equipment`、`list_inventory`、`list_consumables`、`list_activities`、`my_bookings`、`operations_summary`、`search_documents`。
+
+在支持 MCP 的客户端（如 TRAE / Claude Desktop）中这样配置：
+
+```json
+{
+  "mcpServers": {
+    "kx-ops": {
+      "command": "node",
+      "args": ["/绝对路径/class-fund/mcp/server.mjs"],
+      "env": {
+        "KX_API_URL": "http://1.14.125.216/api/v1",
+        "KX_API_KEY": "cfk_xxxxxxxx"
+      }
+    }
+  }
+}
+```
+
+- `KX_API_KEY` 需先在「API 管理」签发，且持有人具备 `api` 权限。
+- 全部工具为只读查询，写操作仍需回到 Web 界面，避免 Agent 误改数据。
 
 ## 数据与备份
 
@@ -213,8 +306,11 @@ class-fund/
 ├── server/src/          # 后端：app.js、db.js、auth.js、backup.js、worker.js、routes/
 ├── web/src/             # 前端：pages/、components/、api.js、App.jsx
 ├── miniapp/             # 微信小程序（Taro + React + TS）
+├── mcp/server.mjs       # MCP 工具服务（stdio，只读查询）
 ├── tests/api.test.js    # 接口自动化测试
 ├── docs/项目手册.md      # 开发/运维手册
+├── docs/设计报告.pdf     # 设计报告（需求、架构、测试方案、第三方组件声明）
+├── docs/作品介绍-一页纸.pdf
 ├── deploy/              # Nginx 配置
 ├── Dockerfile
 └── docker-compose.yml
