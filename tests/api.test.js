@@ -24,6 +24,14 @@ function txPayload(overrides = {}) {
   };
 }
 
+async function memberSheet(rows) {
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('成员名单');
+  sheet.addRow(['姓名', '学号', '部门', '权限', '登录账号', '可收入', '可支出']);
+  rows.forEach((row) => sheet.addRow(row));
+  return Buffer.from(await workbook.xlsx.writeBuffer());
+}
+
 describe('班费管理系统 API', () => {
   let adminToken;
   let financeToken;
@@ -72,6 +80,54 @@ describe('班费管理系统 API', () => {
     });
     expect(res.status).toBe(409);
     expect(res.body.error).toContain('已存在');
+  });
+
+  it('成员名单导入自动生成账号与初始密码', async () => {
+    const buffer = await memberSheet([
+      ['周测试', '2023019901', '技术部', '设备、库存', '', '', ''],
+      ['吴测试', '', '宣传部', '活动', '', '', ''],
+      ['郑测试', '2023019902', '财务组', '经费', 'finance99', '是', '否'],
+      ['周测试', '2023019901', '技术部', '设备', '', '', ''],
+      ['', '2023019903', '', '', '', '', ''],
+      ['坏权限', '', '', '超级权限', '', '', ''],
+    ]);
+    const res = await api
+      .post('/api/v1/imports/members')
+      .set(bearer(adminToken))
+      .attach('file', buffer, 'members.xlsx');
+    expect(res.status).toBe(201);
+    expect(res.body.created).toBe(3);
+    expect(res.body.skipped).toHaveLength(3);
+
+    const byName = Object.fromEntries(res.body.accounts.map((item) => [item.displayName, item]));
+    expect(byName['周测试'].username).toBe('2023019901');
+    expect(byName['周测试'].perms).toEqual(['equipment', 'inventory']);
+    expect(byName['吴测试'].username).toMatch(/^kx\d{4}$/);
+    expect(byName['郑测试'].username).toBe('finance99');
+    expect(byName['郑测试'].perms).toEqual(['finance']);
+    for (const account of res.body.accounts) {
+      expect(account.password).toMatch(/^(?=.*[a-zA-Z])(?=.*\d).{8,64}$/);
+    }
+
+    const loginRes = await login(byName['吴测试'].username, byName['吴测试'].password);
+    expect(loginRes.status).toBe(200);
+    expect(loginRes.body.user.mustChangePassword).toBe(true);
+  });
+
+  it('名单导入跳过已存在账号，不覆盖原账号', async () => {
+    const buffer = await memberSheet([['周测试', '2023019901', '技术部', '设备', '', '', '']]);
+    const res = await api
+      .post('/api/v1/imports/members')
+      .set(bearer(adminToken))
+      .attach('file', buffer, 'members.xlsx');
+    expect(res.status).toBe(200);
+    expect(res.body.created).toBe(0);
+    expect(res.body.skipped[0].reason).toContain('已存在');
+  });
+
+  it('名单导入接口需要登录', async () => {
+    const res = await api.get('/api/v1/imports/members/template');
+    expect(res.status).toBe(401);
   });
 
   it('财务员的收入/支出权限相互独立', async () => {

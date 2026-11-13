@@ -1,8 +1,9 @@
+import crypto from 'node:crypto';
 import express from 'express';
 import multer from 'multer';
 import ExcelJS from 'exceljs';
 import { db, audit, nowIso, tx } from '../db.js';
-import { requireAuth, requirePerm } from '../auth.js';
+import { PERM_KEYS, hashPassword, requireAuth, requirePerm, requireRole } from '../auth.js';
 import { HttpError, ah, clientIp, parseDateTime, text } from '../helpers.js';
 
 export const importRouter = express.Router();
@@ -325,5 +326,241 @@ importRouter.post(
       userAgent: req.headers['user-agent'],
     });
     res.json({ createdShifts, createdAssignments, skipped, total: rows.length });
+  }),
+);
+
+/* ------------------------------ 成员名单导入 ------------------------------ */
+
+const PERM_ALIAS = {
+  finance: ['finance', '经费', '财务', '经费台账'],
+  equipment: ['equipment', '设备', '设备预约', '打印'],
+  inventory: ['inventory', '库存', '耗材', '元器件', '借还'],
+  access: ['access', '门禁'],
+  activity: ['activity', '活动'],
+  duty: ['duty', '值班'],
+  doc: ['doc', '资料', '文档', '资料归档'],
+  api: ['api', 'API', '接口', 'API调用'],
+};
+
+function parsePermCell(raw) {
+  const tokens = String(raw || '')
+    .split(/[,，、;；/\s]+/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+  const perms = [];
+  const unknown = [];
+  for (const token of tokens) {
+    const hit = PERM_KEYS.find((key) =>
+      PERM_ALIAS[key].some((alias) => alias.toLowerCase() === token.toLowerCase()),
+    );
+    if (hit) {
+      if (!perms.includes(hit)) perms.push(hit);
+    } else {
+      unknown.push(token);
+    }
+  }
+  return { perms, unknown };
+}
+
+const yesNo = (raw, fallback) => {
+  const value = String(raw || '').trim();
+  if (!value) return fallback;
+  if (['是', 'Y', 'y', '1', 'true', '允许', '可'].includes(value)) return true;
+  if (['否', 'N', 'n', '0', 'false', '不允许'].includes(value)) return false;
+  return fallback;
+};
+
+/** 生成符合密码规则的初始密码：字母 + 数字，长度 10 */
+function generatePassword() {
+  return `Kx${crypto.randomBytes(3).toString('hex')}${crypto.randomInt(10, 99)}`;
+}
+
+/** 未提供账号时自动分配 kx0001、kx0002…，避开已存在账号 */
+function nextAutoUsername(taken) {
+  const max = db
+    .prepare("SELECT username FROM users WHERE username GLOB 'kx[0-9][0-9][0-9][0-9]'")
+    .all()
+    .reduce((acc, row) => Math.max(acc, Number(row.username.slice(2)) || 0), 0);
+  let seq = max;
+  let candidate;
+  do {
+    seq += 1;
+    candidate = `kx${String(seq).padStart(4, '0')}`;
+  } while (taken.has(candidate));
+  return candidate;
+}
+
+importRouter.get(
+  '/members/template',
+  requireAuth,
+  requireRole('admin'),
+  ah(async (req, res) => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('成员名单');
+    sheet.columns = [
+      { header: '姓名', key: 'name', width: 16 },
+      { header: '学号', key: 'studentNo', width: 18 },
+      { header: '部门', key: 'department', width: 16 },
+      { header: '手机', key: 'phone', width: 16 },
+      { header: '登录账号', key: 'username', width: 18 },
+      { header: '角色', key: 'role', width: 12 },
+      { header: '权限', key: 'perms', width: 30 },
+      { header: '可收入', key: 'canIncome', width: 10 },
+      { header: '可支出', key: 'canExpense', width: 10 },
+      { header: '加入时间', key: 'joinedAt', width: 16 },
+    ];
+    sheet.getRow(1).font = { bold: true };
+    sheet.addRow({
+      name: '张三',
+      studentNo: '2023010001',
+      department: '技术部',
+      phone: '13800000000',
+      username: '',
+      role: '成员',
+      perms: '设备、库存、值班',
+      canIncome: '',
+      canExpense: '',
+      joinedAt: '2026-09-01',
+    });
+    sheet.addRow({
+      name: '李四',
+      studentNo: '2023010002',
+      department: '财务组',
+      phone: '',
+      username: 'finance02',
+      role: '成员',
+      perms: '经费',
+      canIncome: '是',
+      canExpense: '是',
+      joinedAt: '2026-09-01',
+    });
+    for (const index of [2, 3]) sheet.getRow(index).font = { color: { argb: 'FF9CA3AF' } };
+
+    const guide = workbook.addWorksheet('填写说明');
+    guide.columns = [{ width: 100 }];
+    [
+      '1. 姓名为必填项，其余列可留空。',
+      '2. 登录账号：留空时优先使用学号；学号也为空则自动分配 kx0001 起的账号。账号需为 3-40 位字母/数字/._-。',
+      '3. 角色：填「成员」或「管理员」，留空默认为成员；管理员自动拥有全部权限。',
+      '4. 权限：多个权限用逗号、顿号或空格分隔，可选：经费、设备、库存、门禁、活动、值班、资料、API（也支持英文 finance/equipment/inventory/access/activity/duty/doc/api）。',
+      '5. 可收入/可支出：仅当权限包含「经费」时生效，填「是」或「否」，默认都是「是」，至少保留一项。',
+      '6. 初始密码由系统自动生成并在导入结果中返回，请下载账号表分发给成员；成员首次登录需修改密码。',
+      '7. 已存在的账号会跳过并在结果中列出，不会覆盖原账号。',
+    ].forEach((line) => guide.addRow([line]));
+
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename="member-import-template.xlsx"');
+    const buffer = await workbook.xlsx.writeBuffer();
+    res.end(Buffer.from(buffer));
+  }),
+);
+
+importRouter.post(
+  '/members',
+  requireAuth,
+  requireRole('admin'),
+  upload.single('file'),
+  ah(async (req, res) => {
+    const rows = await parseWorkbook(req);
+    if (rows.length === 0) throw new HttpError(400, '未读取到有效数据行，请使用模板填写');
+    if (rows.length > 200) throw new HttpError(400, '单次最多导入 200 名成员，请分批导入');
+
+    const skipped = [];
+    const accounts = [];
+    const now = nowIso();
+    const taken = new Set(db.prepare('SELECT username FROM users').all().map((row) => row.username));
+    const autoSeqTaken = new Set(taken);
+
+    tx(() => {
+      const insert = db.prepare(
+        `INSERT INTO users (username, password_hash, display_name, role, status, must_change_password,
+                            can_income, can_expense, perms, student_no, department, phone, joined_at,
+                            created_at, created_by)
+         VALUES (?, ?, ?, ?, 'active', 1, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      );
+      for (const { row, data } of rows) {
+        try {
+          const displayName = cellText(pick(data, ['姓名', '名称', '成员姓名']));
+          if (!displayName) throw new Error('缺少姓名');
+          if (displayName.length > 30) throw new Error('姓名过长（最多 30 字）');
+          const studentNo = cellText(pick(data, ['学号', '学工号']));
+          const department = cellText(pick(data, ['部门', '组别']));
+          const phone = cellText(pick(data, ['手机', '联系方式', '电话']));
+          const joinedAt = cellText(pick(data, ['加入时间', '加入日期']));
+
+          const roleRaw = cellText(pick(data, ['角色']));
+          const role = ['管理员', 'admin'].includes(roleRaw) ? 'admin' : 'member';
+
+          let username = cellText(pick(data, ['登录账号', '账号', '用户名'])) || studentNo;
+          if (!username) username = nextAutoUsername(autoSeqTaken);
+          if (!/^[a-zA-Z0-9_.-]{3,40}$/.test(username)) {
+            throw new Error(`账号「${username}」需为 3-40 位字母/数字/._-`);
+          }
+          if (taken.has(username)) throw new Error(`账号 ${username} 已存在`);
+
+          let perms = PERM_KEYS;
+          let canIncome = true;
+          let canExpense = true;
+          if (role !== 'admin') {
+            const parsed = parsePermCell(cellText(pick(data, ['权限', '权限列表'])));
+            if (parsed.unknown.length > 0) {
+              throw new Error(`权限无法识别：${parsed.unknown.join('、')}`);
+            }
+            perms = parsed.perms;
+            if (perms.includes('finance')) {
+              canIncome = yesNo(cellText(pick(data, ['可收入'])), true);
+              canExpense = yesNo(cellText(pick(data, ['可支出'])), true);
+              if (!canIncome && !canExpense) throw new Error('经费权限需至少允许收入或支出');
+            } else {
+              canIncome = false;
+              canExpense = false;
+            }
+          }
+
+          const password = generatePassword();
+          const id = Number(
+            insert.run(
+              username,
+              hashPassword(password),
+              displayName,
+              role,
+              canIncome ? 1 : 0,
+              canExpense ? 1 : 0,
+              JSON.stringify(perms),
+              studentNo || null,
+              department || null,
+              phone || null,
+              joinedAt || null,
+              now,
+              req.user.id,
+            ).lastInsertRowid,
+          );
+          taken.add(username);
+          autoSeqTaken.add(username);
+          accounts.push({ id, username, password, displayName, role, studentNo, department, perms });
+        } catch (err) {
+          skipped.push({ row, name: cellText(pick(data, ['姓名', '名称', '成员姓名'])), reason: err.message });
+        }
+      }
+    });
+
+    audit({
+      actor: req.user,
+      action: 'user.import',
+      entityType: 'user',
+      detail: {
+        created: accounts.length,
+        skipped: skipped.length,
+        usernames: accounts.map((item) => item.username),
+      },
+      ip: clientIp(req),
+      userAgent: req.headers['user-agent'],
+    });
+    res.status(accounts.length > 0 ? 201 : 200).json({
+      created: accounts.length,
+      total: rows.length,
+      skipped,
+      accounts,
+    });
   }),
 );

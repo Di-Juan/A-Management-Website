@@ -14,6 +14,7 @@ const ACTION_META = {
   'attachment.delete': { label: '删除凭证', icon: 'trash', tone: 'red' },
   'user.create': { label: '创建账号', icon: 'users', tone: 'green' },
   'user.batch_create': { label: '批量创建账号', icon: 'users', tone: 'green' },
+  'user.import': { label: '名单导入建号', icon: 'users', tone: 'green' },
   'user.update': { label: '修改账号', icon: 'users', tone: 'amber' },
   'user.profile_update': { label: '修改姓名', icon: 'user', tone: 'teal' },
   'user.reset_password': { label: '重置密码', icon: 'key', tone: 'amber' },
@@ -62,6 +63,8 @@ function describe(log) {
       return `创建账号 ${d.username}（${d.displayName}）`;
     case 'user.batch_create':
       return `批量创建 ${d.count} 个账号（${d.startUsername} ~ ${d.endUsername}）`;
+    case 'user.import':
+      return `名单导入创建 ${d.created} 个账号，跳过 ${d.skipped} 行`;
     case 'user.update': {
       const before = d.before || {};
       const after = d.after || {};

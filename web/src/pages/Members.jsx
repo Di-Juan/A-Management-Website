@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import Icon from '../icons.jsx';
-import { api, formatDateTime, PERM_LABEL, PERM_OPTIONS, ROLE_OPTIONS } from '../api.js';
+import { api, downloadFile, formatDateTime, PERM_LABEL, PERM_OPTIONS, ROLE_OPTIONS } from '../api.js';
 import { useAuth, useToast } from '../context.jsx';
 import { EmptyState, Modal, PageHeader, RoleBadge, Skeleton } from '../components/UI.jsx';
 
@@ -53,6 +53,9 @@ export default function Members() {
   });
   const [batchError, setBatchError] = useState('');
   const [batchResult, setBatchResult] = useState(null);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [importResult, setImportResult] = useState(null);
   const [renameTarget, setRenameTarget] = useState(null);
   const [renameName, setRenameName] = useState('');
   const [renameError, setRenameError] = useState('');
@@ -236,6 +239,54 @@ export default function Members() {
     }
   };
 
+  const openImport = () => {
+    setImportResult(null);
+    setImportOpen(true);
+  };
+
+  const importMembers = async (file) => {
+    if (!file) return;
+    setImporting(true);
+    try {
+      const result = await api.upload('/imports/members', [file], {}, 'file');
+      setImportResult(result);
+      toast.success(
+        `已创建 ${result.created} 个账号${result.skipped.length ? `，跳过 ${result.skipped.length} 行` : ''}`,
+      );
+      await load();
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const downloadAccounts = () => {
+    if (!importResult?.accounts?.length) return;
+    const rows = [
+      ['姓名', '登录账号', '初始密码', '角色', '部门', '学号'],
+      ...importResult.accounts.map((item) => [
+        item.displayName,
+        item.username,
+        item.password,
+        item.role === 'admin' ? '管理员' : '成员',
+        item.department || '',
+        item.studentNo || '',
+      ]),
+    ];
+    const csv =
+      String.fromCharCode(0xfeff) +
+      rows
+        .map((row) => row.map((cell) => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(','))
+        .join('\r\n');
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = '成员账号表.csv';
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <div className="page">
       <PageHeader
@@ -243,6 +294,10 @@ export default function Members() {
         description="管理员可管理账号并按模块分配权限；成员可同时拥有经费、设备、门禁、活动等任意组合的权限。"
         actions={
           <>
+            <button type="button" className="btn btn-ghost" onClick={openImport}>
+              <Icon name="download" size={16} />
+              导入名单
+            </button>
             <button type="button" className="btn btn-ghost" onClick={openBatch}>
               <Icon name="users" size={16} />
               批量添加
@@ -816,6 +871,120 @@ export default function Members() {
             <p className="hint">姓名会按「前缀 + 账号」生成，如“成员1001”。</p>
             {batchError ? <div className="form-error">{batchError}</div> : null}
           </form>
+        )}
+      </Modal>
+
+      <Modal
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        title={importResult ? '名单导入完成' : '导入成员名单'}
+        subtitle={
+          importResult
+            ? '初始密码仅在此显示一次，请下载账号表后分发给成员'
+            : '上传 Excel 名单，系统自动生成登录账号与初始密码，成员首次登录需改密'
+        }
+        width={640}
+        footer={
+          importResult ? (
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={downloadAccounts}
+                disabled={!importResult.accounts.length}
+              >
+                下载账号表
+              </button>
+              <button type="button" className="btn btn-primary" onClick={() => setImportOpen(false)}>
+                完成
+              </button>
+            </div>
+          ) : (
+            <div className="modal-actions">
+              <button type="button" className="btn btn-ghost" onClick={() => setImportOpen(false)}>
+                取消
+              </button>
+            </div>
+          )
+        }
+      >
+        {importResult ? (
+          <div className="batch-result">
+            <p>
+              共 {importResult.total} 行，成功创建 <strong>{importResult.created}</strong> 个账号
+              {importResult.skipped.length ? `，跳过 ${importResult.skipped.length} 行` : ''}。
+            </p>
+            {importResult.accounts.length ? (
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>姓名</th>
+                    <th>登录账号</th>
+                    <th>初始密码</th>
+                    <th>权限</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {importResult.accounts.map((item) => (
+                    <tr key={item.id}>
+                      <td>{item.displayName}</td>
+                      <td>{item.username}</td>
+                      <td>
+                        <code>{item.password}</code>
+                      </td>
+                      <td>
+                        {item.role === 'admin'
+                          ? '管理员（全部权限）'
+                          : item.perms.map((key) => PERM_LABEL[key] || key).join('、') || '无'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : null}
+            {importResult.skipped.length ? (
+              <div>
+                <p className="hint">跳过明细：</p>
+                <ul className="hint">
+                  {importResult.skipped.map((item) => (
+                    <li key={item.row}>
+                      第 {item.row} 行{item.name ? `（${item.name}）` : ''}：{item.reason}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <div className="form">
+            <div className="modal-actions" style={{ justifyContent: 'flex-start' }}>
+              <button
+                type="button"
+                className="btn btn-ghost"
+                onClick={() => downloadFile('/imports/members/template', '成员导入模板.xlsx')}
+              >
+                <Icon name="download" size={14} />
+                下载模板
+              </button>
+              <label className="btn btn-primary">
+                <Icon name="plus" size={14} />
+                {importing ? '导入中…' : '选择 Excel 并导入'}
+                <input
+                  type="file"
+                  accept=".xlsx,.xls"
+                  hidden
+                  disabled={importing}
+                  onChange={(e) => {
+                    importMembers(e.target.files?.[0]);
+                    e.target.value = '';
+                  }}
+                />
+              </label>
+            </div>
+            <p className="hint">
+              姓名必填；登录账号留空时使用学号，学号也为空则自动分配 kx0001 起的账号；权限列支持「设备、库存、值班」等中文写法，多个用顿号或逗号分隔；已存在的账号会跳过，不会覆盖。
+            </p>
+          </div>
         )}
       </Modal>
 
