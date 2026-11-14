@@ -728,6 +728,52 @@ describe('科协运营模块 API', () => {
     expect(checkin.status).toBe(200);
   });
 
+  it('值班本人可实时修改在岗状态', async () => {
+    const created = await api.post('/api/v1/duty/shifts').set(bearer(opsToken)).send({
+      date: '2026-12-07',
+      startTime: '19:00',
+      endTime: '21:00',
+      location: '创客空间 B 区',
+      capacity: 2,
+    });
+    const shift = created.body.items[0];
+    const assigned = await api
+      .post(`/api/v1/duty/shifts/${shift.id}/assign`)
+      .set(bearer(opsToken))
+      .send({ userId: plainUserId });
+    const assignment = assigned.body.items[0].assignments[0];
+    expect(assignment.presence).toBe('off');
+
+    const onDuty = await api
+      .patch(`/api/v1/duty/assignments/${assignment.id}/presence`)
+      .set(bearer(plainToken))
+      .send({ presence: 'on' });
+    expect(onDuty.status).toBe(200);
+    expect(onDuty.body.items[0].assignments[0].presence).toBe('on');
+    expect(onDuty.body.items[0].assignments[0].presenceAt).toBeTruthy();
+
+    const away = await api
+      .patch(`/api/v1/duty/assignments/${assignment.id}/presence`)
+      .set(bearer(opsToken))
+      .send({ presence: 'away' });
+    expect(away.status).toBe(200);
+    expect(away.body.items[0].assignments[0].presence).toBe('away');
+
+    const invalid = await api
+      .patch(`/api/v1/duty/assignments/${assignment.id}/presence`)
+      .set(bearer(plainToken))
+      .send({ presence: 'busy' });
+    expect(invalid.status).toBe(400);
+
+    const listed = await api
+      .get('/api/v1/duty/shifts?from=2026-12-07&to=2026-12-07')
+      .set(bearer(plainToken));
+    expect(listed.body.items[0].assignments[0].presence).toBe('away');
+
+    const summary = await api.get('/api/v1/summary').set(bearer(plainToken));
+    expect(summary.status).toBe(200);
+  });
+
   it('资料归档按权限控制可见范围并支持下载', async () => {
     const uploaded = await api
       .post('/api/v1/documents')

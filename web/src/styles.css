@@ -3258,6 +3258,72 @@ textarea {
   color: var(--brand-dark);
 }
 
+/* ---------- 值班在岗状态 ---------- */
+.presence-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex: 0 0 auto;
+}
+
+.tag.presence-on {
+  border-color: #86efac;
+  background: #f0fdf4;
+  color: #166534;
+}
+
+.tag.presence-on .presence-dot {
+  background: #16a34a;
+}
+
+.tag.presence-away {
+  border-color: #fcd34d;
+  background: #fffbeb;
+  color: #92400e;
+}
+
+.tag.presence-away .presence-dot {
+  background: #d97706;
+}
+
+.tag.presence-off .presence-dot {
+  opacity: 0.45;
+}
+
+.presence-switch {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.presence-btn {
+  padding: 2px 9px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.presence-btn:hover:not(:disabled) {
+  border-color: var(--brand);
+  color: var(--brand-dark);
+}
+
+.presence-btn.active {
+  border-color: var(--brand);
+  background: var(--brand-soft);
+  color: var(--brand-dark);
+}
+
+.presence-btn:disabled {
+  cursor: default;
+}
+
 .field-full {
   grid-column: 1 / -1;
 }

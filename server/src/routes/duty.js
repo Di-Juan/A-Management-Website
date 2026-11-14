@@ -42,6 +42,8 @@ function withAssignments(shifts) {
       studentNo: row.student_no || '',
       phone: row.phone || '',
       status: row.status,
+      presence: row.presence || 'off',
+      presenceAt: row.presence_at || '',
       note: row.note || '',
       createdAt: row.created_at,
     });
@@ -236,6 +238,41 @@ dutyRouter.delete(
       });
     });
     res.status(204).end();
+  }),
+);
+
+dutyRouter.patch(
+  '/assignments/:id/presence',
+  requireAuth,
+  ah((req, res) => {
+    const assignment = db.prepare('SELECT * FROM duty_assignments WHERE id = ?').get(Number(req.params.id));
+    if (!assignment) throw new HttpError(404, '排班记录不存在');
+    if (assignment.user_id !== req.user.id && !hasPerm(req.user, 'duty')) {
+      throw new HttpError(403, '只能修改自己的在岗状态');
+    }
+    const presence = String(req.body?.presence ?? '').trim();
+    if (!['on', 'away', 'off'].includes(presence)) {
+      throw new HttpError(400, '在岗状态需为 on / away / off');
+    }
+    const shift = getShift(assignment.shift_id);
+    const now = nowIso();
+    tx(() => {
+      db.prepare('UPDATE duty_assignments SET presence = ?, presence_at = ? WHERE id = ?').run(
+        presence,
+        now,
+        assignment.id,
+      );
+      audit({
+        actor: req.user,
+        action: 'duty.presence',
+        entityType: 'duty_assignment',
+        entityId: assignment.id,
+        detail: { presence, date: shift.date, startTime: shift.start_time, userId: assignment.user_id },
+        ip: clientIp(req),
+        userAgent: req.headers['user-agent'],
+      });
+    });
+    res.json({ items: withAssignments([shift]) });
   }),
 );
 

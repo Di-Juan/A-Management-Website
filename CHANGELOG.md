@@ -4,6 +4,15 @@
 
 ## [Unreleased]
 
+### 新增
+
+- 值班在岗状态实时化：`duty_assignments` 增加 `presence`（在岗/暂离/离岗）与 `presence_at`，本人可在值班列表切换，值班页每 10 秒静默同步，首页今日值班展示在岗标记
+- `PATCH /api/v1/duty/assignments/:id/presence` 接口，本人或具备 `duty` 权限者可修改，变更写入审计
+
+### 修复
+
+- 无
+
 ## [1.0.0] - 2026-11-12
 
 首个完整版本：从班级班费系统演进为科协运营管理平台。

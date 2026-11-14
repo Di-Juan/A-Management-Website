@@ -188,7 +188,17 @@ export default function Dashboard() {
                   </strong>
                   <span>{shift.location || '未设置地点'}</span>
                   <small>
-                    {shift.assignees.length ? shift.assignees.join('、') : '待排班'}
+                    {shift.assignees.length
+                      ? (shift.presence || shift.assignees.map((name) => ({ name, presence: 'off' })))
+                          .map((item) =>
+                            item.presence === 'on'
+                              ? `${item.name}·在岗`
+                              : item.presence === 'away'
+                                ? `${item.name}·暂离`
+                                : item.name,
+                          )
+                          .join('、')
+                      : '待排班'}
                     {shift.mine ? '（我）' : ''}
                   </small>
                 </li>

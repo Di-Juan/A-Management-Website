@@ -506,11 +506,12 @@ function main() {
         .lastInsertRowid,
     );
     const insertDuty = db.prepare(
-      `INSERT INTO duty_assignments (shift_id, user_id, status, note, created_at) VALUES (?, ?, ?, ?, ?)`,
+      `INSERT INTO duty_assignments (shift_id, user_id, status, presence, presence_at, note, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
     );
-    insertDuty.run(todayShift, userIds.access01, 'assigned', '主值班', nowIso());
-    insertDuty.run(todayShift, userIds.equip01, 'assigned', '协助设备借还', nowIso());
-    insertDuty.run(tomorrowShift, userIds.equip01, 'assigned', null, nowIso());
+    insertDuty.run(todayShift, userIds.access01, 'checked_in', 'on', nowIso(), '主值班', nowIso());
+    insertDuty.run(todayShift, userIds.equip01, 'assigned', 'off', null, '协助设备借还', nowIso());
+    insertDuty.run(tomorrowShift, userIds.equip01, 'assigned', 'off', null, null, nowIso());
 
     /* ---------- 资料归档 ---------- */
     const insertDocument = db.prepare(

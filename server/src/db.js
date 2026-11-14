@@ -391,6 +391,8 @@ db.exec(`
     shift_id INTEGER NOT NULL REFERENCES duty_shifts (id),
     user_id INTEGER NOT NULL REFERENCES users (id),
     status TEXT NOT NULL DEFAULT 'assigned' CHECK (status IN ('assigned', 'checked_in', 'absent')),
+    presence TEXT NOT NULL DEFAULT 'off',
+    presence_at TEXT,
     note TEXT,
     created_at TEXT NOT NULL,
     UNIQUE (shift_id, user_id)
@@ -529,6 +531,20 @@ const equipmentColumns = new Set(
 );
 if (!equipmentColumns.has('type_name')) {
   db.exec('ALTER TABLE equipment ADD COLUMN type_name TEXT');
+}
+
+/** 旧库升级：值班支持实时在岗状态（on 在岗 / away 暂离 / off 离岗） */
+const dutyAssignmentColumns = new Set(
+  db
+    .prepare('PRAGMA table_info(duty_assignments)')
+    .all()
+    .map((col) => col.name),
+);
+if (!dutyAssignmentColumns.has('presence')) {
+  db.exec("ALTER TABLE duty_assignments ADD COLUMN presence TEXT NOT NULL DEFAULT 'off'");
+}
+if (!dutyAssignmentColumns.has('presence_at')) {
+  db.exec('ALTER TABLE duty_assignments ADD COLUMN presence_at TEXT');
 }
 
 /** 同步事务：BEGIN IMMEDIATE 立即获取写锁，避免并发写入互相覆盖 */

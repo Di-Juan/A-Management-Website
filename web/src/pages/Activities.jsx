@@ -55,9 +55,25 @@ export default function Activities() {
     }
   }, [toast]);
 
+  const refreshDuty = useCallback(async () => {
+    try {
+      const res = await api.get('/duty/shifts');
+      setShifts(res.items);
+    } catch {
+      /* 轮询失败保持上次数据，不打断操作 */
+    }
+  }, []);
+
   useEffect(() => {
     load();
   }, [load]);
+
+  // 值班在岗状态需要实时同步：停留在值班页时每 10 秒静默刷新
+  useEffect(() => {
+    if (tab !== 'duty') return undefined;
+    const timer = setInterval(refreshDuty, 10000);
+    return () => clearInterval(timer);
+  }, [tab, refreshDuty]);
 
   const openActivities = activities.filter((item) => item.status === 'open').length;
   const mySignups = activities.filter((item) => item.mySignupStatus === 'confirmed').length;
@@ -233,6 +249,24 @@ export default function Activities() {
       await api.post(`/duty/assignments/${assignment.id}/checkin`, {});
       toast.success('值班签到成功');
       await load();
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
+  const setPresence = async (assignment, presence) => {
+    try {
+      const res = await api.patch(`/duty/assignments/${assignment.id}/presence`, { presence });
+      setShifts((prev) =>
+        prev.map((shift) =>
+          shift.assignments.some((item) => item.id === assignment.id)
+            ? { ...shift, assignments: res.items[0].assignments }
+            : shift,
+        ),
+      );
+      toast.success(
+        presence === 'on' ? '已标记为在岗' : presence === 'away' ? '已标记为暂离' : '已标记为离岗',
+      );
     } catch (err) {
       toast.error(err.message);
     }
@@ -470,9 +504,16 @@ export default function Activities() {
                       ) : (
                         <div className="tag-list">
                           {shift.assignments.map((assignment) => (
-                            <span key={assignment.id} className="tag">
+                            <span key={assignment.id} className={`tag presence-${assignment.presence || 'off'}`}>
+                              <i className="presence-dot" />
                               {assignment.userName}
-                              {assignment.status === 'checked_in' ? ' · 已签到' : ''}
+                              {assignment.presence === 'on'
+                                ? ' · 在岗'
+                                : assignment.presence === 'away'
+                                  ? ' · 暂离'
+                                  : assignment.status === 'checked_in'
+                                    ? ' · 已签到'
+                                    : ''}
                               {(canDuty || assignment.userId === user.id) && assignment.status !== 'checked_in' ? (
                                 <button type="button" className="tag-x" onClick={() => checkInDuty(assignment)} title="签到">
                                   ✓
@@ -492,6 +533,32 @@ export default function Activities() {
                           ))}
                         </div>
                       )}
+                      {(() => {
+                        const mine = shift.assignments.find((item) => item.userId === user.id);
+                        if (!mine) return null;
+                        return (
+                          <div className="presence-switch">
+                            {[
+                              { value: 'on', label: '在岗' },
+                              { value: 'away', label: '暂离' },
+                              { value: 'off', label: '离岗' },
+                            ].map((option) => (
+                              <button
+                                key={option.value}
+                                type="button"
+                                className={`presence-btn${(mine.presence || 'off') === option.value ? ' active' : ''}`}
+                                onClick={() => setPresence(mine, option.value)}
+                                disabled={(mine.presence || 'off') === option.value}
+                              >
+                                {option.label}
+                              </button>
+                            ))}
+                            {mine.presenceAt ? (
+                              <span className="muted small">更新于 {formatDateTime(mine.presenceAt)}</span>
+                            ) : null}
+                          </div>
+                        );
+                      })()}
                       <div className="muted small">
                         {shift.assignments.length} / {shift.capacity} 人
                       </div>

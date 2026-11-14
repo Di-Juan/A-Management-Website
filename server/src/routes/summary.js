@@ -60,7 +60,7 @@ summaryRouter.get(
       )
       .all(today);
     const assignees = db.prepare(
-      `SELECT da.shift_id, da.user_id, u.display_name, da.status
+      `SELECT da.shift_id, da.user_id, u.display_name, da.status, da.presence
        FROM duty_assignments da JOIN users u ON u.id = da.user_id
        WHERE da.shift_id IN (${shifts.map(() => '?').join(',') || 'NULL'})`,
     );
@@ -87,6 +87,12 @@ summaryRouter.get(
             capacity: shift.capacity,
             note: shift.note,
             assignees: people.map((row) => row.display_name),
+            presence: people.map((row) => ({
+              userId: row.user_id,
+              name: row.display_name,
+              presence: row.presence || 'off',
+            })),
+            onDutyCount: people.filter((row) => (row.presence || 'off') === 'on').length,
             mine: people.some((row) => row.user_id === req.user.id),
           };
         }),
