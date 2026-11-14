@@ -1,0 +1,11 @@
+# HTTPS 部署叠加配置：docker compose -f docker-compose.yml -f docker-compose.https.yml up -d
+# 需要先在 deploy/certs/ 放置 fullchain.pem 与 privkey.pem（见 docs/部署说明-HTTPS.md）
+# 使用 !override 替换默认的 8080 端口与 Nginx 配置挂载，需 Docker Compose 2.24+
+services:
+  nginx:
+    ports: !override
+      - "80:80"
+      - "443:443"
+    volumes: !override
+      - ./deploy/nginx-https.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./deploy/certs:/etc/nginx/certs:ro

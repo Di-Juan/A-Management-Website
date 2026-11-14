@@ -104,6 +104,22 @@ docker compose exec app npm run seed:demo
    - 已存在账号、缺少姓名、权限无法识别等情况逐行跳过并给出原因，不影响其他行导入。
 3. 导入结果页可下载账号表（CSV）分发给成员；初始密码仅在结果中返回一次，审计日志只记录账号不记录密码。
 
+### HTTPS 部署（可选）
+
+平台默认以 HTTP 监听 `8080`，由宿主机 Nginx 或内网直连。若需要平台自身提供 HTTPS，仓库提供了一份可直接使用的叠加配置：
+
+```bash
+# 1. 证书放到 deploy/certs/（fullchain.pem + privkey.pem，已加入 .gitignore）
+# 2. .env 中设置 COOKIE_SECURE=1、CORS_ORIGINS=https://你的域名
+docker compose -f docker-compose.yml -f docker-compose.https.yml up -d
+```
+
+- [deploy/nginx-https.conf](./deploy/nginx-https.conf)：容器内 Nginx 监听 80/443，80 全量跳转 HTTPS，启用 TLS 1.2/1.3、HSTS 与安全响应头
+- [docker-compose.https.yml](./docker-compose.https.yml)：叠加暴露 80/443，挂载证书与 TLS 配置
+- [docs/部署说明-HTTPS.md](./docs/部署说明-HTTPS.md)：证书获取（已有证书 / certbot / 自签）、环境变量、启动验证与回退步骤
+
+> 演示环境因 ICP 备案未完成，域名链路不可达，线上仍以 `http://1.14.125.216/` 提供；该 HTTPS 方案供备案完成后或内网自建使用。
+
 ### 本地开发
 
 要求 Node.js ≥ 22.5。

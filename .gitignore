@@ -4,6 +4,7 @@ server/data/
 server/data-test/
 coverage/
 .env
+deploy/certs/
 *.log
 *.tar.gz
 .DS_Store
