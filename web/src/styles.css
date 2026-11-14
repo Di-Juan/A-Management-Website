@@ -3260,35 +3260,67 @@ textarea {
 
 /* ---------- 值班在岗状态 ---------- */
 .presence-dot {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--muted);
   flex: 0 0 auto;
+  display: inline-block;
 }
 
-.tag.presence-on {
-  border-color: #86efac;
-  background: #f0fdf4;
+.presence-dot.on {
+  background: #16a34a;
+  box-shadow: 0 0 0 2px #dcfce7;
+}
+
+.presence-dot.away {
+  background: #d97706;
+  box-shadow: 0 0 0 2px #fef3c7;
+}
+
+.presence-dot.off {
+  opacity: 0.45;
+}
+
+.presence-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.presence-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.presence-name {
+  font-size: 12px;
+  color: var(--ink-2);
+  min-width: 56px;
+}
+
+.presence-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.presence-label em {
+  font-style: normal;
+  color: inherit;
+  opacity: 0.85;
+}
+
+.presence-label.presence-on {
   color: #166534;
 }
 
-.tag.presence-on .presence-dot {
-  background: #16a34a;
-}
-
-.tag.presence-away {
-  border-color: #fcd34d;
-  background: #fffbeb;
+.presence-label.presence-away {
   color: #92400e;
-}
-
-.tag.presence-away .presence-dot {
-  background: #d97706;
-}
-
-.tag.presence-off .presence-dot {
-  opacity: 0.45;
 }
 
 .presence-switch {
@@ -3296,7 +3328,6 @@ textarea {
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 6px;
 }
 
 .presence-btn {
@@ -3322,6 +3353,13 @@ textarea {
 
 .presence-btn:disabled {
   cursor: default;
+}
+
+.duty-people {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .field-full {

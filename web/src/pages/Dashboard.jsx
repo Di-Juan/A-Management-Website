@@ -132,7 +132,7 @@ export default function Dashboard() {
               label: '今日值班',
               value: loading ? '—' : ops?.todayDuty?.total ?? 0,
               hint: ops?.todayDuty?.mine ? '我今天值班' : '今日班次',
-              to: '/activities',
+              to: '/activities?tab=duty',
             },
             {
               label: '我的借出',
@@ -172,7 +172,7 @@ export default function Dashboard() {
               <h3>今日值班</h3>
               <p className="card-desc">{todayLabel}</p>
             </div>
-            <Link to="/activities" className="link">
+            <Link to="/activities?tab=duty" className="link">
               值班安排
               <Icon name="chevronRight" size={14} />
             </Link>
@@ -187,20 +187,23 @@ export default function Dashboard() {
                     {shift.startTime} - {shift.endTime}
                   </strong>
                   <span>{shift.location || '未设置地点'}</span>
-                  <small>
-                    {shift.assignees.length
-                      ? (shift.presence || shift.assignees.map((name) => ({ name, presence: 'off' })))
-                          .map((item) =>
-                            item.presence === 'on'
-                              ? `${item.name}·在岗`
-                              : item.presence === 'away'
-                                ? `${item.name}·暂离`
-                                : item.name,
-                          )
-                          .join('、')
-                      : '待排班'}
-                    {shift.mine ? '（我）' : ''}
-                  </small>
+                  <div className="duty-people">
+                    {shift.assignees.length ? (
+                      (shift.presence || shift.assignees.map((name) => ({ name, presence: 'off' }))).map((item) => (
+                        <span key={item.name} className={`presence-label presence-${item.presence || 'off'}`}>
+                          <i className={`presence-dot ${item.presence || 'off'}`} />
+                          {item.name}
+                          <em>{item.presence === 'on' ? '在岗' : item.presence === 'away' ? '暂离' : '离岗'}</em>
+                        </span>
+                      ))
+                    ) : (
+                      <span className="muted">待排班</span>
+                    )}
+                    {shift.mine ? <span className="muted small">（我）</span> : null}
+                    {typeof shift.onDutyCount === 'number' && shift.assignees.length ? (
+                      <span className="muted small">在岗 {shift.onDutyCount} 人</span>
+                    ) : null}
+                  </div>
                 </li>
               ))}
             </ul>

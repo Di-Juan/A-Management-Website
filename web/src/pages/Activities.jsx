@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { api, canUse, downloadFile, formatDateTime } from '../api.js';
 import { useAuth, useToast } from '../context.jsx';
 import Icon from '../icons.jsx';
@@ -23,7 +24,10 @@ export default function Activities() {
   const canActivity = canUse(user, 'activity');
   const canDuty = canUse(user, 'duty');
 
-  const [tab, setTab] = useState(canActivity || !canDuty ? 'activities' : 'duty');
+  const [searchParams] = useSearchParams();
+  const [tab, setTab] = useState(
+    searchParams.get('tab') === 'duty' ? 'duty' : canActivity || !canDuty ? 'activities' : 'duty',
+  );
   const [loading, setLoading] = useState(true);
   const [activities, setActivities] = useState([]);
   const [shifts, setShifts] = useState([]);
@@ -67,6 +71,13 @@ export default function Activities() {
   useEffect(() => {
     load();
   }, [load]);
+
+  // 首页「值班安排」等入口带 ?tab=duty 跳转，这里同步标签页
+  useEffect(() => {
+    const wanted = searchParams.get('tab');
+    if (wanted === 'duty') setTab('duty');
+    else if (wanted === 'activities' && canActivity) setTab('activities');
+  }, [searchParams, canActivity]);
 
   // 值班在岗状态需要实时同步：停留在值班页时每 10 秒静默刷新
   useEffect(() => {
@@ -285,7 +296,7 @@ export default function Activities() {
 
   const tabs = [];
   if (canActivity) tabs.push({ value: 'activities', label: '活动报名', count: openActivities });
-  if (canDuty) tabs.push({ value: 'duty', label: '值班安排', count: upcomingShifts });
+  tabs.push({ value: 'duty', label: '值班安排', count: upcomingShifts });
 
   return (
     <div className="page">
@@ -487,6 +498,7 @@ export default function Activities() {
                   <th>时段</th>
                   <th>地点</th>
                   <th>值班人员</th>
+                  <th>在岗状态</th>
                   <th className="col-actions">操作</th>
                 </tr>
               </thead>
@@ -504,16 +516,9 @@ export default function Activities() {
                       ) : (
                         <div className="tag-list">
                           {shift.assignments.map((assignment) => (
-                            <span key={assignment.id} className={`tag presence-${assignment.presence || 'off'}`}>
-                              <i className="presence-dot" />
+                            <span key={assignment.id} className="tag">
                               {assignment.userName}
-                              {assignment.presence === 'on'
-                                ? ' · 在岗'
-                                : assignment.presence === 'away'
-                                  ? ' · 暂离'
-                                  : assignment.status === 'checked_in'
-                                    ? ' · 已签到'
-                                    : ''}
+                              {assignment.status === 'checked_in' ? ' · 已签到' : ''}
                               {(canDuty || assignment.userId === user.id) && assignment.status !== 'checked_in' ? (
                                 <button type="button" className="tag-x" onClick={() => checkInDuty(assignment)} title="签到">
                                   ✓
@@ -533,35 +538,56 @@ export default function Activities() {
                           ))}
                         </div>
                       )}
-                      {(() => {
-                        const mine = shift.assignments.find((item) => item.userId === user.id);
-                        if (!mine) return null;
-                        return (
-                          <div className="presence-switch">
-                            {[
-                              { value: 'on', label: '在岗' },
-                              { value: 'away', label: '暂离' },
-                              { value: 'off', label: '离岗' },
-                            ].map((option) => (
-                              <button
-                                key={option.value}
-                                type="button"
-                                className={`presence-btn${(mine.presence || 'off') === option.value ? ' active' : ''}`}
-                                onClick={() => setPresence(mine, option.value)}
-                                disabled={(mine.presence || 'off') === option.value}
-                              >
-                                {option.label}
-                              </button>
-                            ))}
-                            {mine.presenceAt ? (
-                              <span className="muted small">更新于 {formatDateTime(mine.presenceAt)}</span>
-                            ) : null}
-                          </div>
-                        );
-                      })()}
                       <div className="muted small">
                         {shift.assignments.length} / {shift.capacity} 人
                       </div>
+                    </td>
+                    <td>
+                      {shift.assignments.length === 0 ? (
+                        <span className="muted">—</span>
+                      ) : (
+                        <div className="presence-list">
+                          {shift.assignments.map((assignment) => {
+                            const editable = canDuty || assignment.userId === user.id;
+                            const current = assignment.presence || 'off';
+                            return (
+                              <div key={assignment.id} className="presence-row">
+                                <span className="presence-name">
+                                  {assignment.userName}
+                                  {assignment.userId === user.id ? '（我）' : ''}
+                                </span>
+                                {editable ? (
+                                  <div className="presence-switch">
+                                    {[
+                                      { value: 'on', label: '在岗' },
+                                      { value: 'away', label: '暂离' },
+                                      { value: 'off', label: '离岗' },
+                                    ].map((option) => (
+                                      <button
+                                        key={option.value}
+                                        type="button"
+                                        className={`presence-btn${current === option.value ? ' active' : ''}`}
+                                        onClick={() => setPresence(assignment, option.value)}
+                                        disabled={current === option.value}
+                                      >
+                                        {option.label}
+                                      </button>
+                                    ))}
+                                  </div>
+                                ) : (
+                                  <span className={`presence-label presence-${current}`}>
+                                    <i className={`presence-dot ${current}`} />
+                                    {current === 'on' ? '在岗' : current === 'away' ? '暂离' : '离岗'}
+                                  </span>
+                                )}
+                                {editable && assignment.presenceAt ? (
+                                  <span className="muted small">{formatDateTime(assignment.presenceAt)}</span>
+                                ) : null}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </td>
                     <td className="col-actions">
                       {canDuty || shift.assignments.length < shift.capacity ? (
